@@ -1,0 +1,16 @@
+.gradle/
+build/
+local.properties
+.idea/
+*.iml
+.kotlin/
+
+# 이 Mac에서만 쓰는 작업 기록
+WORKLOG-*.md
+
+# 개인 사진·저작권 있는 배경화면이 들어간 화면
+docs/fold8-unfolded-photo-v2.png
+docs/fold8-unfolded-stack.png
+docs/emu-unfolded-photos.png
+
+.DS_Store

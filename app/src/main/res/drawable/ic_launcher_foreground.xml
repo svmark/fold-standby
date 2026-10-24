@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 둥근 사각 시계판 + 시·분침 + 노란 중심점 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M42,32 h24 a10,10 0 0 1 10,10 v24 a10,10 0 0 1 -10,10 h-24 a10,10 0 0 1 -10,-10 v-24 a10,10 0 0 1 10,-10 z"
+        android:strokeWidth="3"
+        android:strokeColor="#FFFFFF" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M54,54 L54,40 M54,54 L64,59"
+        android:strokeLineCap="round"
+        android:strokeWidth="3.5"
+        android:strokeColor="#FFFFFF" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M54,54 L45,66"
+        android:strokeLineCap="round"
+        android:strokeWidth="1.5"
+        android:strokeColor="#F5C542" />
+    <path
+        android:fillColor="#F5C542"
+        android:pathData="M54,54 m-3,0 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0" />
+</vector>
