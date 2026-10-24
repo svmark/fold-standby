@@ -29,6 +29,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import com.marksnd.foldstandby.data.AgendaEvent
 import com.marksnd.foldstandby.data.AgendaState
@@ -130,8 +131,11 @@ private fun BigTime(hm: String, ap: String, digitSize: Dp, available: Dp) {
         val digitsW = measurer.measure(hm, base.copy(fontSize = digitSize.toSp())).size.width
         val apW = measurer.measure(ap, base.copy(fontSize = (digitSize * 0.18f).toSp())).size.width
         val total = digitsW + apW + (digitSize * 0.06f).toPx()
-        minOf(1f, available.toPx() / total)
+        // 화면이 막 뜰 때 칸 크기가 잠깐 0이면 0/0이 되어 멈춘다. 그때는 줄이지 않는다.
+        val ratio = available.toPx() / total
+        if (total > 0f && ratio.isFinite()) minOf(1f, ratio) else 1f
     }
+    if (digitSize <= 0.dp || !digitSize.value.isFinite()) return
     val size = digitSize * scale
     val brush = if (p.night) Brush.verticalGradient(listOf(p.primary, p.primary))
     else Brush.verticalGradient(0.15f to Color.White, 1f to lerp(Color.White, p.accent, 0.55f))

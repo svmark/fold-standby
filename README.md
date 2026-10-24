@@ -4,6 +4,25 @@
 
 갤럭시 Z Fold8을 가로로 세워 충전하면 아이폰 스탠바이처럼 시계·달력·날씨·음악·사진을 크게 보여주는 앱.
 
+## 스크린샷
+
+데모 데이터로 찍은 화면이다(커버 화면 1972×1248 · 펼친 화면 2448×1848 에뮬레이터). 일정·사진은 예시, 날씨는 실제 서울 날씨.
+
+| 커버 화면 · 달력 + 시계 (기본) | 디지털 |
+|---|---|
+| ![달력과 정사각 아날로그 시계](docs/screenshots/01-cover-clock.png) | ![둥근 굵은 숫자 디지털 시계, 날짜·날씨·알람](docs/screenshots/02-cover-digital.png) |
+| **달력 · 오늘·내일 일정** | **날씨** |
+| ![요일·큰 날짜·시각과 이번 주 줄, 오늘·내일 일정](docs/screenshots/03-cover-calendar.png) | ![화면 전체 날씨와 시간별 예보](docs/screenshots/04-cover-weather.png) |
+| **펼친 화면 · 사진 카드** | **펼친 화면 · 날씨 카드** |
+| ![왼쪽 달력, 오른쪽 사진 카드](docs/screenshots/07-unfolded-photo.png) | ![왼쪽 달력, 오른쪽 날씨 카드](docs/screenshots/08-unfolded-weather.png) |
+| **야간 모드** | **알람 전 은은한 빛** |
+| ![어두운 빨강 야간 모드](docs/screenshots/09-night.png) | ![호박색으로 밝아지는 알람 전 화면](docs/screenshots/10-alarm-glow.png) |
+
+<p>
+  <img src="docs/screenshots/05-cover-portrait.png" width="240" alt="커버 화면 세로: 달력과 시계">
+  <img src="docs/screenshots/06-cover-portrait-calendar.png" width="240" alt="커버 화면 세로: 달력 스타일">
+</p>
+
 ## 화면
 
 좌우로 밀면 보기가 바뀌고, 시계 보기에서 위아래로 밀면 스타일이 바뀐다. 열 때마다(아이콘·루틴·화면 보호기, 다른 앱에서 돌아올 때) 달력+시계로 시작한다. 펼친 화면 오른쪽 스택만 마지막 카드를 기억한다.
