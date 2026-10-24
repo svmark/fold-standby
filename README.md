@@ -90,9 +90,12 @@ app/src/main/java/com/marksnd/foldstandby/
 ├─ StandbyActivity.kt       전체화면 스탠바이, 접힘 자세 감지
 ├─ StandbyDream.kt          충전 중 화면 보호기 (Compose를 DreamService에 연결)
 ├─ service/NotifListener.kt 알림 접근: 새 알림 전달, 미디어 세션 권한
-├─ data/                    설정, 시각, 캘린더, 날씨(Open-Meteo), 배터리·알람·조도, 미디어
-└─ ui/                      StandbyScreen(페이저), 시계 4종, 위젯, 재생 중, 알림 배너
+├─ data/                    설정, 시각, 캘린더, 날씨(Open-Meteo), 배터리·알람·조도·움직임, 미디어, 사진
+└─ ui/                      StandbyScreen(페이저), 시계 3종(달력+아날로그·디지털·달력), 날씨, 재생 중,
+                            펼친 화면 스택, 사진 카드, 안쪽 카메라 피하기, 알림 배너
 ```
+
+기획 배경(아이폰 듀오 스탠바이 조사, 범위 결정, 화면 사양)은 [docs/plan-v6.html](docs/plan-v6.html)에 있다. GitHub에서는 HTML 원문으로 보이므로, 내려받아 브라우저로 연다.
 
 ## 실기기에서 확인할 것
 

@@ -96,15 +96,24 @@ th { font-size: 12.5px; color: var(--muted); font-weight: 500; letter-spacing: .
 .shots figcaption { font-size: 13px; color: var(--muted); }
 .steps .d .pill { margin-right: 6px; }
 @media (prefers-reduced-motion: reduce) { .device { transition: none; } }
+/* 한글 줄바꿈: 어절 중간에서 끊지 않는다 (hangul-wrap). 명시도 0이라 기존 규칙이 우선한다. */
+:where(h1,h2,h3,h4,h5,h6,p,li,dd,dt,blockquote,figcaption,td,th,.q,.caption,.status-line){word-break:keep-all;overflow-wrap:break-word}
+:where(h1,h2,h3,h4,h5,h6){text-wrap:balance}
+:where(p,li,dd,blockquote,figcaption,td,.q,.caption){text-wrap:pretty}
+:where(pre,code,kbd,samp){overflow-wrap:anywhere}
 </style>
 
 <div class="wrap">
-  <div class="eyebrow">Galaxy Z Fold8 · Android 앱 계획 · v2</div>
+  <div class="eyebrow">Galaxy Z Fold8 · Android 앱 계획 · v6</div>
   <h1>폴드8용 StandBy 시계·달력 앱</h1>
-  <p class="lede">아이폰 스탠바이처럼 폴드8을 가로로 세워 충전하면 시계·달력·위젯·음악 화면이 켜지는 앱을 만든다. 기본 화면은 사진과 같은 “왼쪽 달력 + 오른쪽 둥근 사각 시계”다.</p>
+  <p class="lede">아이폰 스탠바이처럼 폴드8을 가로로 세워 충전하면 시계·달력·날씨·음악 화면이 켜지는 앱을 만든다. 기본 화면은 아이폰 듀오 스탠바이와 같은 “왼쪽 달력 + 오른쪽 정사각 둥근 시계”다.</p>
   <div class="status-line">
     <span class="pill done">1차 구현 완료</span>
-    <span>2026-10-24 · 빌드 성공 · 커버 화면 크기 에뮬레이터에서 화면 확인 · 실기기 확인 남음</span>
+    <span>2026-10-24 · 폴드8 실기기 설치</span>
+    <span class="pill done">아이폰 듀오 화면 반영</span>
+    <span>정사각 시계 · 주황 · 월요일 시작 · 날씨 전체 화면</span>
+    <span class="pill done">침대 옆 · 펼친 화면 스택</span>
+    <span>알람 전 빛 · 움직이면 깨우기 · 사진 · 카메라 피하기</span>
   </div>
 
   <div class="verdict">
@@ -112,10 +121,11 @@ th { font-size: 12.5px; color: var(--muted); font-weight: 500; letter-spacing: .
       <dt>결론</dt><dd><b>직접 만든 안드로이드 앱 1개</b>로 충분하다. 앱 안에 <b>전체화면 Activity</b>와 <b>화면 보호기(DreamService)</b>를 같이 넣는다.</dd>
       <dt>자동 실행</dt><dd>“가로로 돌리면 실행”은 안드로이드가 막아 둔 동작이다(백그라운드 앱의 화면 띄우기 제한). 대신 <b>충전 중 화면 보호기</b>로 등록하면 충전기에 꽂고 화면이 꺼질 때 시스템이 알아서 띄워 준다. 아이폰 스탠바이도 “충전 + 가로”가 조건이라 체감은 거의 같다.</dd>
       <dt>추천 자세</dt><dd>접은 상태로 <b>커버 화면(1972×1248, 약 1.58:1)을 가로로 세우기</b>. 사진 속 비율(약 1.6:1)과 거의 같다. 펼친 화면·반접기용 레이아웃도 같이 만든다.</dd>
-      <dt>스탠바이 기능</dt><dd>1차에 <b>시계·위젯·재생 중 3개 보기와 스와이프 전환, 시계 스타일, 위젯 스택, 음악 컨트롤, 알림, 야간 모드</b>. 2차에 사진, 타이머 같은 진행 중 알림, 충전 방식별 화면 기억.</dd>
+      <dt>스탠바이 기능</dt><dd><b>시계 · 날씨 · 재생 중 3개 보기</b>를 좌우로 넘긴다. 커버 화면에서는 <b>시계 스타일 3개</b>(달력+아날로그 · 디지털 · 날짜만 크게)를 위아래로, 펼친 화면에서는 오른쪽 반의 <b>위젯 스택</b>(사진 · 시계 · 날씨 · 재생 중)을 위아래로 넘긴다. 음악 컨트롤, 알림 배너, 야간 모드, 알람 전 은은한 빛, 움직이면 깨우기.</dd>
       <dt>기술</dt><dd>Kotlin · Jetpack Compose · Canvas(시계) · java.time(달력) · Jetpack WindowManager(접힘 감지) · NotificationListenerService(음악·알림)</dd>
-      <dt>배포·기간</dt><dd>Play 스토어 없이 Android Studio에서 폰에 직접 설치(무선 디버깅). 1차 약 3주, 2차 약 1.5주로 잡았다.</dd>
-      <dt>진행 상황</dt><dd><b>1차 코드 완성.</b> <code>~/Projects/fold-standby</code>에서 빌드되고, 폴드8 커버 화면과 같은 1972×1248 에뮬레이터에서 시계·위젯·재생 중 보기와 시계 스타일 4개가 정상 표시된다. 음악·알림·화면 보호기 자동 실행은 실기기에서 확인해야 한다.</dd>
+      <dt>배포·기간</dt><dd>Play 스토어 없이 Android Studio에서 폰에 직접 설치(무선 디버깅). 1차는 끝났고, 남은 일은 항목당 1–4일.</dd>
+      <dt>진행 상황</dt><dd><b>1차 완성, 아이폰 듀오 화면 반영, 침대 옆 기능과 펼친 화면 스택까지 완료.</b> 폴드8(SM-F971N, Android 17)의 커버 화면(가로·세로)과 펼친 화면에서 확인했다. 알람 전 빛과 움직이면 깨우기는 에뮬레이터에서 확인했고, 삼성 시계 알람과 음악 재생 중 화면은 아직 실기기로 보지 않았다.</dd>
+      <dt>범위 변경</dt><dd>텐트 자세 자동 실행, 실시간 점수 카드, 스마트홈, 세계 시계, 일정·배터리·알람 위젯은 <b>하지 않기로 했다</b>. 펼친 화면 4칸 대시보드는 오른쪽 위젯 스택으로 바꿨다. 남은 후보는 편집기·색 테마, 추억(몇 년 전 오늘), Flow.</dd>
     </dl>
   </div>
 
@@ -125,7 +135,7 @@ th { font-size: 12.5px; color: var(--muted); font-weight: 500; letter-spacing: .
       <div class="grp" role="group" aria-label="보기">
         <button id="v-clock" data-view="clock" aria-pressed="true">달력+시계</button>
         <button id="v-digital" data-view="digital" aria-pressed="false">디지털 시계</button>
-        <button id="v-widgets" data-view="widgets" aria-pressed="false">위젯</button>
+        <button id="v-weather" data-view="weather" aria-pressed="false">날씨</button>
         <button id="v-music" data-view="music" aria-pressed="false">재생 중</button>
       </div>
       <div class="grp" role="group" aria-label="화면">
@@ -147,49 +157,95 @@ th { font-size: 12.5px; color: var(--muted); font-weight: 500; letter-spacing: .
     <div class="caption" id="cap"></div>
   </section>
 
-  <h2>1차 구현 결과</h2>
-  <p>위 미리보기는 계획 단계의 흉내다. 아래는 실제 앱을 폴드8 커버 화면 크기(1972×1248) 에뮬레이터에 설치해 가로로 돌린 화면이다. 날씨는 Open-Meteo에서 받은 실제 서울 날씨다.</p>
+  <h2>지금 화면</h2>
+  <p>데모 데이터로 찍은 앱 화면이다(폴드8 커버·펼친 화면 크기 에뮬레이터). 일정·사진은 예시, 날씨는 Open-Meteo의 실제 서울 날씨.</p>
   <div class="shots">
-    <figure><img src="cover-clock.png" alt="달력과 둥근 사각 아날로그 시계 화면"><figcaption>시계 보기 · 달력 + 아날로그 (기본)</figcaption></figure>
-    <figure><img src="cover-widgets.png" alt="배터리와 날씨 위젯 카드 화면"><figcaption>위젯 보기 · 배터리 / 날씨</figcaption></figure>
-    <figure><img src="cover-world.png" alt="서울, 뉴욕, 런던, 샌프란시스코 세계 시계 화면"><figcaption>시계 보기 · 세계 시계 스타일</figcaption></figure>
+    <figure><img src="screenshots/01-cover-clock.png" alt="커버 화면 가로: 주황 요일, 큰 날짜, 월요일 시작 달력, 정사각 아날로그 시계"><figcaption>커버 화면 가로 · 달력 + 정사각 아날로그</figcaption></figure>
+    <figure><img src="screenshots/04-cover-weather.png" alt="커버 화면 가로: 지역, 달과 구름, 17도, 시간별 예보가 화면을 채운 날씨"><figcaption>커버 화면 가로 · 날씨 전체 화면</figcaption></figure>
+    <figure><img src="screenshots/08-unfolded-weather.png" alt="펼친 화면: 왼쪽 날짜와 달력, 오른쪽 날씨 카드"><figcaption>펼친 화면 · 왼쪽 달력 + 오른쪽 스택(날씨 카드)</figcaption></figure>
+    <figure><img src="screenshots/05-cover-portrait.png" alt="커버 화면 세로: 위에 날짜와 달력, 아래 정사각 시계" style="aspect-ratio:1248/1972;object-fit:contain"><figcaption>커버 화면 세로 · 큰 날짜를 줄이고 달력 칸을 높임</figcaption></figure>
+    <figure><img src="screenshots/10-alarm-glow.png" alt="알람 3분 전 화면 전체가 호박색으로 밝아진 모습"><figcaption>알람 3분 전 · 호박색 빛 (에뮬레이터)</figcaption></figure>
+    <figure><img src="screenshots/09-night.png" alt="밤에 1분 동안 가만히 두어 거의 꺼진 화면"><figcaption>밤에 1분 가만히 두면 · 거의 꺼짐 (에뮬레이터)</figcaption></figure>
   </div>
 
   <h3>기능별 상태</h3>
   <div class="tbl"><table>
-    <thead><tr><th>기능</th><th>만든 내용</th><th>확인</th></tr></thead>
+    <thead><tr><th>기능</th><th>지금 모습</th><th>확인</th></tr></thead>
     <tbody>
-      <tr><td><b>달력 + 아날로그 시계</b></td><td>사진 그대로. 요일(노랑)·월, 큰 날짜, 일요일 시작 월 달력(오늘은 노란 원, 주말 회색), 슈퍼타원 시계판과 60개 눈금, 흐르는 노란 초침.</td><td><span class="pill done">에뮬레이터 확인</span></td></tr>
-      <tr><td><b>시계 스타일 4개</b></td><td>달력+아날로그 · 큰 디지털(콜론 깜빡임) · 세계 시계(서울·뉴욕·런던·샌프란시스코, 시차와 오늘/내일 표시) · 날짜만 크게.</td><td><span class="pill done">에뮬레이터 확인</span></td></tr>
-      <tr><td><b>스와이프 전환</b></td><td>좌우로 시계 / 위젯 / 재생 중, 시계에서 위아래로 스타일. 마지막 보기와 스타일을 기억해 다음에 그대로 연다.</td><td><span class="pill done">에뮬레이터 확인</span></td></tr>
-      <tr><td><b>위젯 묶음 2개</b></td><td>왼쪽: 오늘 일정 / 배터리. 오른쪽: 날씨 / 다음 알람. 자동 넘김: 1시간 안에 일정이 있으면 일정, 충전 중이고 일정이 없으면 배터리, 5–9시엔 날씨, 21시 이후 알람이 있으면 알람.</td><td><span class="pill done">날씨·배터리 확인</span> <span class="pill check">일정·알람 실기기</span></td></tr>
-      <tr><td><b>재생 중 음악</b></td><td>앨범 아트, 곡명·가수·앱 이름, 진행 막대, 이전/재생·일시정지/다음. 재생 중인 세션을 자동으로 골라 따라간다. 권한이 없으면 안내 문구.</td><td><span class="pill done">권한 안내 확인</span> <span class="pill check">재생 실기기</span></td></tr>
-      <tr><td><b>새 알림 배너</b></td><td>위쪽에 앱 아이콘·제목·내용을 6초간. 잠겨 있으면 앱 이름과 “새 알림”만. 조용한 알림, 진행 중 알림, 미디어 알림은 띄우지 않는다.</td><td><span class="pill check">실기기 확인 필요</span></td></tr>
-      <tr><td><b>야간 모드</b></td><td>조도 3 lx 아래면 빨강, 10 lx 위면 원래대로. 밝기 최저, 초침 숨김, 앨범 아트 흐리게. 설정에서 자동/항상/끄기.</td><td><span class="pill done">에뮬레이터 확인</span></td></tr>
-      <tr><td><b>번인 방지</b></td><td>1분마다 화면 전체를 3dp씩 9곳을 돌며 이동.</td><td><span class="pill done">구현</span></td></tr>
-      <tr><td><b>충전 중 화면 보호기</b></td><td>DreamService + Compose 연결. 터치를 받아 스와이프·음악 버튼이 동작한다. 끌 때는 전원 버튼.</td><td><span class="pill check">실기기 확인 필요</span></td></tr>
-      <tr><td><b>직접 실행 화면</b></td><td>“StandBy” 아이콘. 전체화면, 충전 중일 때만 화면 켜짐 유지.</td><td><span class="pill done">에뮬레이터 확인</span></td></tr>
-      <tr><td><b>펼침·반접기 레이아웃</b></td><td>펼친 4:3 화면은 아래 띠에 다음 일정. 반접기는 윗면에 보기, 아랫면에 일정. 반접기는 2차 예정이던 것을 미리 넣었다.</td><td><span class="pill check">실기기 확인 필요</span></td></tr>
-      <tr><td><b>설정 앱</b></td><td>“StandBy 설정” 아이콘. 화면 보호기 설정 바로가기, 캘린더·위치·알림 접근 권한 안내, 언어·강조색(노랑·흰색·민트·분홍)·야간 모드.</td><td><span class="pill done">구현</span></td></tr>
+      <tr><td><b>달력 + 아날로그 시계</b></td><td>아이폰 듀오 사진대로. 주황 요일 + 회색 월, 큰 날짜, 월요일 시작 달력(토·일 회색, 오늘 주황 원), 가로·세로가 같은 정사각 슈퍼타원 시계판, 주황 초침.</td><td><span class="pill done">실기기 확인</span></td></tr>
+      <tr><td><b>커버 화면 세로</b></td><td>날짜 영역이 낮고 넓어서 큰 날짜를 줄이고 달력 칸을 높였다. 달력 숫자 약 10dp → 약 14dp(가로 화면 14.5dp와 비슷).</td><td><span class="pill done">실기기 확인</span></td></tr>
+      <tr><td><b>시계 스타일 3개</b></td><td>달력+아날로그 · 큰 디지털 · 날짜만 크게. 커버 화면에서 위아래로 넘기고, 오른쪽 끝 세로 점 3개가 현재 스타일을 표시.</td><td><span class="pill done">아날로그 실기기</span> <span class="pill check">나머지 2개 재확인</span></td></tr>
+      <tr><td><b>날씨</b></td><td>커버 화면에서는 화면 전체, 펼친 화면 스택에서는 세로 칸용 배치. 지역 · 시각 · 하늘 그림(밤엔 달) · 큰 기온 · 상태 · 최고/최저 · 체감 · 습도 · 바람 · 시간별 예보.</td><td><span class="pill done">실기기 확인</span></td></tr>
+      <tr><td><b>펼친 화면 50:50</b></td><td>펼친 안쪽 화면(가로)에서 왼쪽 날짜·달력과 오른쪽 영역을 반씩. 책처럼 살짝 접으면 접힘선 양쪽이 한 면씩.</td><td><span class="pill done">실기기 확인</span></td></tr>
+      <tr><td><b>펼친 화면 오른쪽 스택</b></td><td>오른쪽 반을 위아래로 밀면 사진 → 시계 → 날씨 → 재생 중. 오른쪽 끝 점, 마지막 카드 기억, 음악을 틀면 재생 중 카드로.</td><td><span class="pill done">실기기 확인</span> <span class="pill check">재생 중 자동 전환</span></td></tr>
+      <tr><td><b>사진 카드</b></td><td>설정에서 고른 갤러리 앨범을 섞어 30초마다 바꿔 보여주고, 왼쪽 아래에 시각. 밤엔 어둡게. 앨범이 없으면 카드가 빠진다.</td><td><span class="pill done">실기기 확인</span></td></tr>
+      <tr><td><b>전면 카메라 피하기</b></td><td>안쪽 화면 카메라는 화면 아래 카메라라서 시스템이 알려주지 않는다. 기기에서 읽은 위치(x 1823–1901, y 18–96px)를 코드에 넣고, 겹치는 카드는 카메라 아래 12dp로 내린다. 사진 윗변 62px → 130px.</td><td><span class="pill done">실기기 실측</span></td></tr>
+      <tr><td><b>알람 전 은은한 빛</b></td><td>다음 알람 15분 전부터 화면이 호박색으로 천천히 밝아지고 밝기도 올라간다. 울리는 동안 최대로 유지하고, 알람을 끄면 원래대로.</td><td><span class="pill done">에뮬레이터 확인</span> <span class="pill check">삼성 시계 알람</span></td></tr>
+      <tr><td><b>움직이면 깨우기</b></td><td>밤에 1분 동안 움직임도 터치도 없으면 화면을 거의 끄고, 폰이 흔들리거나 화면을 만지면 다시 켠다. 깨우는 터치는 넘김으로 전달하지 않는다.</td><td><span class="pill done">에뮬레이터 확인</span></td></tr>
+      <tr><td><b>재생 중 음악 · 알림 배너</b></td><td>앨범 아트·곡 정보·컨트롤, 새 알림 6초 배너(잠겨 있으면 앱 이름만). 알림 접근을 켰다.</td><td><span class="pill check">음악 재생으로 확인</span></td></tr>
+      <tr><td><b>야간 모드</b></td><td>어두우면 전부 어두운 빨강, 밝기 최저, 초침 숨김.</td><td><span class="pill done">실기기 확인</span></td></tr>
+      <tr><td><b>충전 중 화면 보호기</b></td><td>설정 › 디스플레이 › 화면 보호기에서 Fold StandBy를 고르고 “충전 중”으로.</td><td><span class="pill check">폰 설정 후 확인</span></td></tr>
+      <tr><td><b>설정 앱</b></td><td>화면 보호기 바로가기, 권한 안내, 언어 · 주 시작 · 강조색 · 야간 모드, 펼친 화면 스택(사진 카드, 앨범 고르기), 침대 옆 시계(알람 전 빛, 움직이면 깨우기).</td><td><span class="pill done">실기기 확인</span></td></tr>
     </tbody>
   </table></div>
 
-  <h3>계획과 달라진 점</h3>
-  <ul>
-    <li>설정 저장은 DataStore 대신 SharedPreferences를 썼다. 값이 다섯 개뿐이라 충분하다.</li>
-    <li>번인 방지 이동 폭은 ±4px 대신 화면 밀도에 맞춘 3dp다.</li>
-    <li>반접기 레이아웃을 1차에 넣었다. 대신 화면 보호기 안에서는 접힘을 감지하지 않는다.</li>
-    <li>공휴일 표시는 넣지 않았다. 2차로 미룬다.</li>
+  <h2>아이폰 듀오 스탠바이 반영 범위</h2>
+  <p>아이폰 듀오(2026년 10월 출시) 스탠바이를 애플 발표, 리뷰, 코드 유출 기사로 조사했고, 사용자 결정에 따라 범위를 줄였다. 기준 화면은 사용자가 보낸 아이폰 듀오 사진이다.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>아이폰 듀오 스탠바이</th><th>결정</th><th>내용</th></tr></thead>
+    <tbody>
+      <tr><td><b>클래식 캘린더 + 아날로그 얼굴</b></td><td><span class="pill done">반영함</span></td><td>주황 강조, 월요일 시작, 주말 회색, 정사각 시계판, 오른쪽 세로 페이지 점.</td></tr>
+      <tr><td><b>날씨 얼굴</b></td><td><span class="pill done">반영함</span></td><td>커버 화면은 화면 전체, 펼친 화면은 스택 카드.</td></tr>
+      <tr><td><b>디지털 얼굴</b></td><td><span class="pill done">있음</span></td><td>1차에서 만든 큰 디지털 시계.</td></tr>
+      <tr><td><b>위젯 스택(위아래로 넘기기)</b></td><td><span class="pill done">반영함</span></td><td>펼친 화면 오른쪽 반에서 사진 · 시계 · 날씨 · 재생 중. 펼친 화면 4칸 대시보드 대신.</td></tr>
+      <tr><td><b>사진 · 공유 앨범</b></td><td><span class="pill done">반영함</span></td><td>고른 갤러리 앨범을 사진 카드로.</td></tr>
+      <tr><td><b>침대 옆 시계, 알람 전 은은한 빛</b></td><td><span class="pill done">반영함</span></td><td>알람 15분 전부터 호박색으로 밝히고 울리는 동안 유지.</td></tr>
+      <tr><td><b>움직이면 깨우기</b></td><td><span class="pill done">반영함</span></td><td>밤에 가만히 두면 거의 끄고 움직이면 켠다.</td></tr>
+      <tr><td><b>얼굴 편집기, 색 테마</b>: 길게 눌러 스타일·색·글꼴 변경</td><td><span class="pill check">남은 후보</span></td><td>지금은 설정 앱에서 강조색만 고른다.</td></tr>
+      <tr><td><b>추억</b>(몇 년 전 오늘)</td><td><span class="pill check">남은 후보</span></td><td>사진 카드에 몇 년 전 오늘 찍은 사진을 섞는다.</td></tr>
+      <tr><td><b>Flow</b>(움직이는 그림, 유출)</td><td><span class="pill check">남은 후보</span></td><td>흐르는 그라디언트 위에 시계. 번인에 유리.</td></tr>
+      <tr><td><b>텐트 자세에서 충전 없이 켜짐</b></td><td><span class="pill no">제외</span></td><td>사용자 결정. 폴드8에 TENT 상태·힌지 센서가 있다는 것만 확인해 두었다.</td></tr>
+      <tr><td><b>실시간 현황 · 점수 카드</b></td><td><span class="pill no">제외</span></td><td>사진 속 점수 카드는 예시였다(사용자 확인).</td></tr>
+      <tr><td><b>Home Camera · Home Modular</b>(스마트홈)</td><td><span class="pill no">제외</span></td><td>사용자 결정.</td></tr>
+      <tr><td><b>세계 시계</b></td><td><span class="pill no">제외</span></td><td>모양이 좋지 않아 뺐다. 다시 넣으면 새로 디자인한다.</td></tr>
+      <tr><td><b>일정·배터리·알람 위젯</b></td><td><span class="pill no">제외</span></td><td>일정은 펼침·반접기의 아래 띠에만 남았다.</td></tr>
+      <tr><td><b>Snoopy · Fade</b>(유출)</td><td><span class="pill no">제외</span></td><td>Snoopy는 캐릭터 저작권, Fade는 공개된 정보가 없다.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>다음 순서</h3>
+  <ol class="steps" style="counter-reset: s 11">
+    <li><span class="t">실기기로 남은 것 확인</span><span class="days">0.5일</span><span class="d">충전 중 화면 보호기 자동 실행, 음악 재생 중 카드와 자동 전환, 알림 배너, 삼성 시계 알람에서 은은한 빛, 디지털·날짜 스타일.</span></li>
+    <li><span class="t">남은 후보 중 고른 것</span><span class="days">항목당 1–4일</span><span class="d">편집기·색 테마(약 4일), 추억(약 1일), Flow(약 1일).</span></li>
+  </ol>
+
+  <h3>정해 주면 좋은 것</h3>
+  <div class="qs">
+    <div class="q"><b>남은 후보 중 무엇을 할까요?</b><span>편집기·색 테마, 추억, Flow 중에서 고르거나 순서를 정해 주세요.</span></div>
+  </div>
+
+  <h3>조사 출처</h3>
+  <ul class="note">
+    <li><a href="https://www.apple.com/newsroom/2026/10/open-up-to-new-possibilities-with-iphone-duo/">Apple Newsroom: Open up to new possibilities with iPhone Duo</a></li>
+    <li><a href="https://www.apple.com/iphone-duo/">Apple: iPhone Duo</a></li>
+    <li><a href="https://www.macrumors.com/2026/09/10/apple-details-how-ios-27-adapts-to-iphone-duo/">MacRumors: How iOS 27 adapts to iPhone Duo</a></li>
+    <li><a href="https://www.macrumors.com/2026/09/28/iphone-duo-standby-leak/">MacRumors: StandBy leak reveals five unannounced faces</a></li>
+    <li><a href="https://x.com/itspdfu/status/2104567049963921785">pdfu: StandBy deep dive (위젯 배치·편집기)</a></li>
+    <li><a href="https://gizmodo.com/iphone-duo-review-2000827502">Gizmodo: iPhone Duo review</a></li>
+    <li><a href="https://www.ibtimes.com.au/apple-foldable-iphone-duo-standby-mode-1875298">IBTimes: iPhone Duo as a bedside clock</a></li>
+    <li><a href="https://www.cnn.com/cnn-underscored/reviews/iphone-duo">CNN Underscored: iPhone Duo review</a></li>
+    <li><a href="https://duophonehelp.com/guides/iphone-duo-standby-closed-seated-standing-modes">Duo Phone Help: closed, seated, standing &amp; StandBy modes</a></li>
+    <li><a href="https://www.droid-life.com/2026/10/22/iphone-duos-best-idea-comes-to-android/">Droid Life: iPhone Duo’s best idea comes to Android (Foldy)</a></li>
   </ul>
 
-  <h2>1. 폴드8에서 어떤 자세로 쓸까</h2>
-  <p>사진 속 아이폰 듀오는 화면이 바깥으로 접히는 구조라 텐트처럼 세워도 화면이 보인다. 폴드8은 안으로 접히므로 텐트 자세에서는 메인 화면이 안쪽에 갇힌다. 그래서 아래 세 가지 자세를 지원하고, 기본값은 커버 화면으로 둔다. 미리보기의 화면 비율은 아래 해상도 그대로다.</p>
+  <h2>1. 폴드8에서 어떤 자세로 쓸까</h2>
+  <p>사진 속 아이폰 듀오는 화면이 바깥으로 접히는 구조라 텐트처럼 세워도 화면이 보인다. 폴드8은 안으로 접히므로 텐트 자세에서는 메인 화면이 안쪽에 갇힌다. 그래서 아래 세 가지 자세를 지원하고, 기본값은 커버 화면으로 둔다. 미리보기의 화면 비율은 아래 해상도 그대로다.</p>
   <div class="tbl"><table>
     <thead><tr><th>자세</th><th>화면 (가로 기준)</th><th>레이아웃</th><th>평가</th></tr></thead>
     <tbody>
       <tr><td><b>접고 커버 화면을 가로로</b><br><span class="note">충전 거치대나 작은 스탠드에 옆으로 세움</span></td><td>5.5″ · 1972×1248<br>약 1.58:1</td><td>사진과 같은 좌우 분할. 왼쪽 40% 달력, 오른쪽 60% 시계</td><td><span class="pill go">기본값</span></td></tr>
       <tr><td><b>펼쳐서 가로로</b><br><span class="note">태블릿처럼 스탠드에 세움</span></td><td>7.6″ · 2448×1848<br>4:3</td><td>위쪽에 현재 보기, 아래 띠에 오늘 일정 2–3개</td><td><span class="pill go">지원</span></td></tr>
-      <tr><td><b>반접기</b><br><span class="note">세로로 돌린 뒤 L자로 접어 세움</span></td><td>윗면 1848×1224<br>약 1.5:1</td><td>윗면에 현재 보기, 아랫면은 다음 일정</td><td><span class="pill go">1차에 구현</span></td></tr>
+      <tr><td><b>반접기</b><br><span class="note">세로로 돌린 뒤 L자로 접어 세움</span></td><td>윗면 1848×1224<br>약 1.5:1</td><td>윗면에 현재 보기, 아랫면은 다음 일정</td><td><span class="pill go">1차에 구현</span></td></tr>
       <tr><td><b>텐트 자세</b></td><td>—</td><td>메인 화면이 안쪽을 향해 쓸 수 없음</td><td><span class="pill no">불가</span></td></tr>
     </tbody>
   </table></div>
@@ -200,16 +256,16 @@ th { font-size: 12.5px; color: var(--muted); font-weight: 500; letter-spacing: .
   <div class="tbl"><table>
     <thead><tr><th>스탠바이 기능</th><th>폴드8에서 구현 방법</th><th>필요한 권한</th><th>단계</th></tr></thead>
     <tbody>
-      <tr><td><b>3개 보기 + 스와이프</b><br><span class="note">위젯 · 사진 · 시계</span></td><td>Compose <code>HorizontalPager</code>로 보기 전환, 각 보기 안에 <code>VerticalPager</code>로 스타일 전환. 마지막으로 본 화면 기억.</td><td>없음</td><td><span class="pill go">1차</span></td></tr>
-      <tr><td><b>시계 스타일</b><br><span class="note">아날로그 · 디지털 · 세계 · 큰 숫자</span></td><td>사진 속 달력+아날로그를 기본으로, 큰 디지털 숫자, 세계 시계(도시 2–4개), 날짜만 크게 보는 스타일. 강조색 선택(노랑·흰색·민트 등).</td><td>없음</td><td><span class="pill go">1차</span></td></tr>
-      <tr><td><b>위젯 스택 2개</b><br><span class="note">좌우에 위젯 묶음, 위아래로 넘김</span></td><td>앱이 직접 그리는 위젯: 오늘 일정, 날씨, 배터리, 다음 알람. 시간대에 맞춰 자동 순환(아침엔 날씨, 일정 직전엔 일정).</td><td>캘린더 읽기, 대략적 위치</td><td><span class="pill go">1차</span></td></tr>
+      <tr><td><b>3개 보기 + 스와이프</b><br><span class="note">시계 · 날씨 · 재생 중</span></td><td>Compose <code>HorizontalPager</code>로 보기 전환, 각 보기 안에 <code>VerticalPager</code>로 스타일 전환. 마지막으로 본 화면 기억.</td><td>없음</td><td><span class="pill go">1차</span></td></tr>
+      <tr><td><b>시계 스타일</b><br><span class="note">아날로그 · 디지털 · 큰 날짜</span></td><td>아이폰 듀오 사진의 달력+정사각 아날로그를 기본으로, 큰 디지털 숫자, 날짜만 크게. 강조색 선택(기본 주황). 세계 시계는 뺐다.</td><td>없음</td><td><span class="pill go">1차</span></td></tr>
+      <tr><td><b>날씨 (위젯 대신)</b><br><span class="note">화면 전체</span></td><td>처음엔 위젯 묶음 2개(일정·날씨·배터리·알람)였으나, 날씨 하나가 화면을 꽉 채우는 보기로 바꿨다. 시간별 예보 7칸 포함. 일정은 펼침·반접기 아래 띠에 남았다.</td><td>대략적 위치, 캘린더 읽기(아래 띠)</td><td><span class="pill go">1차</span></td></tr>
       <tr><td><b>재생 중 음악</b><br><span class="note">전체화면 앨범 아트 + 컨트롤</span></td><td>알림 접근 권한으로 현재 미디어 세션을 읽어 곡 정보·앨범 아트·재생/다음/이전을 표시. 유튜브 뮤직·스포티파이·멜론 등 대부분 동작.</td><td>알림 접근</td><td><span class="pill go">1차</span></td></tr>
-      <tr><td><b>알림 표시</b><br><span class="note">새 알림이 크게 떴다가 사라짐</span></td><td>같은 알림 접근 권한으로 새 알림을 앱 아이콘 + 제목만 크게 띄우고 5초 뒤 축소. 잠금 중엔 내용 숨김.</td><td>알림 접근</td><td><span class="pill go">1차</span></td></tr>
-      <tr><td><b>야간 모드</b><br><span class="note">어두우면 빨간 화면</span></td><td>조도 센서가 어두우면 모든 요소를 어두운 빨강으로, 밝기 최소. 시간대 지정도 가능.</td><td>없음</td><td><span class="pill go">1차</span></td></tr>
+      <tr><td><b>알림 표시</b><br><span class="note">새 알림이 크게 떴다가 사라짐</span></td><td>같은 알림 접근 권한으로 새 알림을 앱 아이콘 + 제목만 크게 띄우고 5초 뒤 축소. 잠금 중엔 내용 숨김.</td><td>알림 접근</td><td><span class="pill go">1차</span></td></tr>
+      <tr><td><b>야간 모드</b><br><span class="note">어두우면 빨간 화면</span></td><td>조도 센서가 어두우면 모든 요소를 어두운 빨강으로, 밝기 최소. 시간대 지정도 가능.</td><td>없음</td><td><span class="pill go">1차</span></td></tr>
       <tr><td><b>사진</b><br><span class="note">추천 사진 슬라이드</span></td><td>사진 선택기로 고른 앨범·사진을 천천히 넘기며 표시. 위에 시계 작게 겹침.</td><td>선택한 사진만 접근</td><td><span class="pill maybe">2차</span></td></tr>
-      <tr><td><b>실시간 현황(Live Activities)</b><br><span class="note">타이머 · 배달 · 스포츠 점수</span></td><td>안드로이드는 같은 기능이 “진행 중 알림”이다. 알림 접근으로 타이머·배달·지도 안내 같은 진행 중 알림을 골라 크게 보여준다. 앱별로 표시 형식이 달라 지원 앱을 정해 맞춘다.</td><td>알림 접근</td><td><span class="pill maybe">2차</span></td></tr>
-      <tr><td><b>충전기별 화면 기억</b><br><span class="note">맥세이프마다 다른 보기</span></td><td>폰은 충전기를 구분하지 못한다. 대신 유선/무선 충전을 구분해 각각 마지막 보기를 기억한다(예: 침대 옆 무선 = 야간 시계, 책상 유선 = 위젯).</td><td>없음</td><td><span class="pill maybe">2차</span></td></tr>
-      <tr><td><b>다른 앱 위젯 넣기</b></td><td>안드로이드 홈 위젯을 위젯 스택에 끼워 넣기(<code>AppWidgetHost</code>). 위젯마다 사용자 승인이 한 번 필요.</td><td>위젯별 승인</td><td><span class="pill maybe">2차</span></td></tr>
+      <tr><td><b>실시간 현황(Live Activities)</b><br><span class="note">타이머 · 배달 · 스포츠 점수</span></td><td>하지 않기로 했다.</td><td>—</td><td><span class="pill no">제외</span></td></tr>
+      <tr><td><b>충전기별 화면 기억</b><br><span class="note">맥세이프마다 다른 보기</span></td><td>폰은 충전기를 구분하지 못한다. 대신 유선/무선 충전을 구분해 각각 마지막 보기를 기억한다(예: 침대 옆 무선 = 야간 시계, 책상 유선 = 위젯).</td><td>없음</td><td><span class="pill maybe">2차</span></td></tr>
+      <tr><td><b>다른 앱 위젯 넣기</b></td><td>위젯을 날씨 하나로 줄여서 하지 않는다.</td><td>—</td><td><span class="pill no">제외</span></td></tr>
       <tr><td><b>전화 수신 · 음성 비서</b></td><td>전화가 오면 시스템이 화면 보호기 위로 통화 화면을 띄운다. 빅스비·제미나이 호출도 시스템 몫이라 앱에서 만들 것이 없다.</td><td>—</td><td><span class="pill no">시스템 처리</span></td></tr>
     </tbody>
   </table></div>
@@ -219,19 +275,19 @@ th { font-size: 12.5px; color: var(--muted); font-weight: 500; letter-spacing: .
   <div class="tbl"><table>
     <thead><tr><th>방법</th><th>동작</th><th>장단점</th><th>채택</th></tr></thead>
     <tbody>
-      <tr><td><b>A. 화면 보호기 (DreamService)</b></td><td>설정 › 디스플레이 › 화면 보호기에서 이 앱을 고르고 “충전 중”으로 지정. 충전 중 화면이 꺼질 시간이 되면 시스템이 자동으로 띄운다.</td><td>권한이 필요 없고 배터리 부담 0. 스탠바이와 동작이 가장 비슷하다. 단, 회전 여부는 조건이 아니므로 세로일 땐 세로 레이아웃을 보여준다.</td><td><span class="pill go">핵심</span></td></tr>
+      <tr><td><b>A. 화면 보호기 (DreamService)</b></td><td>설정 › 디스플레이 › 화면 보호기에서 이 앱을 고르고 “충전 중”으로 지정. 충전 중 화면이 꺼질 시간이 되면 시스템이 자동으로 띄운다.</td><td>권한이 필요 없고 배터리 부담 0. 스탠바이와 동작이 가장 비슷하다. 단, 회전 여부는 조건이 아니므로 세로일 땐 세로 레이아웃을 보여준다.</td><td><span class="pill go">핵심</span></td></tr>
       <tr><td><b>B. 앱 직접 실행 (Activity)</b></td><td>홈 아이콘이나 바로가기로 열면 전체화면 + 화면 켜짐 유지. 가로로 돌리면 레이아웃이 바로 바뀐다.</td><td>충전기 없이도 쓸 수 있다. 실행은 손으로 해야 한다.</td><td><span class="pill go">핵심</span></td></tr>
       <tr><td><b>C. 모드 및 루틴 (삼성)</b></td><td>“충전 시작” 같은 조건이 되면 “앱 열기”를 실행하는 루틴을 만든다.</td><td>코딩 없이 자동 실행 조건을 세밀하게 걸 수 있다. 쓸 수 있는 조건(회전·거치 등)은 폴드8의 One UI 버전에서 확인해야 한다.</td><td><span class="pill maybe">보조</span></td></tr>
-      <tr><td><b>D. 상시 서비스 + 다른 앱 위에 표시 권한</b></td><td>포그라운드 서비스가 센서를 감시하다 가로+충전이면 Activity를 띄운다.</td><td>회전만으로 켜지게 할 수 있지만 상단 알림이 늘 떠 있고 배터리를 쓴다. 삼성 배터리 최적화가 서비스를 죽이는 일도 잦다.</td><td><span class="pill no">비추천</span></td></tr>
+      <tr><td><b>D. 상시 서비스 + 다른 앱 위에 표시 권한</b></td><td>포그라운드 서비스가 센서를 감시하다 가로+충전이면 Activity를 띄운다.</td><td>회전만으로 켜지게 할 수 있지만 상단 알림이 늘 떠 있고 배터리를 쓴다. 삼성 배터리 최적화가 서비스를 죽이는 일도 잦다.</td><td><span class="pill no">비추천</span></td></tr>
     </tbody>
   </table></div>
-  <p class="note">A와 B는 같은 Compose 화면 코드를 공유한다. 화면 하나를 만들어 두 곳에 꽂는 구조다.</p>
+  <p class="note">A와 B는 같은 Compose 화면 코드를 공유한다. 화면 하나를 만들어 두 곳에 꽂는 구조다.</p>
 
   <h2>4. 앱 구조</h2>
   <p>실제로 만든 파일 구성이다. 패키지는 <code>com.marksnd.foldstandby</code>, 최소 Android 12(API 31), 대상 API 37.</p>
 <pre><code>~/Projects/fold-standby/
 ├─ README.md                      설치·처음 설정·구조 설명
-├─ docs/                          계획 페이지(plan.html, plan-v2.html), 에뮬레이터 화면
+├─ docs/                          계획 페이지(plan.html ~ plan-v5.html), 실기기·에뮬레이터 화면
 └─ app/src/main/
    ├─ AndroidManifest.xml          설정 · StandBy 아이콘 2개, 화면 보호기, 알림 리스너
    ├─ res/xml/dream_info.xml       화면 보호기 설정 버튼 → 설정 화면
@@ -239,19 +295,24 @@ th { font-size: 12.5px; color: var(--muted); font-weight: 500; letter-spacing: .
       ├─ MainActivity.kt           설정·권한 안내, 언어·강조색·야간 모드
       ├─ StandbyActivity.kt        전체화면, 충전 중 화면 켜짐, 반접기 감지
       ├─ StandbyDream.kt           화면 보호기 (Lifecycle·SavedState 직접 제공)
-      ├─ service/NotifListener.kt  새 알림 전달, 미디어 세션 권한의 근거
+      ├─ service/NotifListener.kt  새 알림 전달, 미디어 세션 권한, 울리는 알람 감지
       ├─ data/Settings.kt          SharedPreferences 설정
       ├─ data/Time.kt              시각(매 프레임/매초), 오늘 날짜, 번인 이동
       ├─ data/Calendar.kt          오늘 일정, 캘린더 변경 감지
       ├─ data/Weather.kt           Open-Meteo, 위치 없으면 서울
       ├─ data/Device.kt            배터리·충전 방식, 다음 알람, 조도 센서
       ├─ data/Media.kt             재생 중 세션 추적과 컨트롤
+      ├─ data/Bedside.kt           알람 전 빛의 세기, 움직임 감지(가속도 센서)
+      ├─ data/Photos.kt            앨범 목록, 앨범 사진, 화면 크기에 맞춰 읽기
       └─ ui/
          ├─ StandbyScreen.kt       보기 전환(페이저), 야간·번인, 화면 비율별 배치
          ├─ SquircleClock.kt       둥근 사각 아날로그 시계 (Canvas)
-         ├─ ClockFaces.kt          달력 패널, 디지털 · 세계 시계 · 큰 날짜
-         ├─ Widgets.kt             위젯 묶음, 일정·날씨·배터리·알람, 아래 일정 띠
+         ├─ ClockFaces.kt          달력 패널(월/일 시작), 디지털 · 큰 날짜
+         ├─ Widgets.kt             날씨 전체 화면, 하늘 그림(해·달·구름·비·눈), 아래 일정 띠
          ├─ NowPlayingPage.kt      재생 중 보기
+         ├─ UnfoldedFace.kt        펼친 화면: 왼쪽 달력 + 오른쪽 위젯 스택
+         ├─ PhotoFrame.kt          사진 카드(30초마다 바뀜, 시각 표시)
+         ├─ Camera.kt              안쪽 화면 전면 카메라 위치와 피하기
          ├─ NotificationBanner.kt  새 알림 배너
          └─ Common.kt              색 팔레트(주간·야간), 글자 크기, 좌우/위아래 분할</code></pre>
 
@@ -296,29 +357,31 @@ c.transportControls.skipToNext()</code></pre>
     }</code></pre>
   <p>커버 화면인지 메인 화면인지는 현재 창 크기(가로·세로 dp)로 판별한다. 폴드8에서 실제 값을 찍어 보고 기준을 정한다.</p>
 
-  <h2>5. 화면 사양 (사진 기준)</h2>
+  <h2>5. 화면 사양 (아이폰 듀오 사진 기준)</h2>
   <div class="tbl"><table>
     <thead><tr><th>요소</th><th>사양</th></tr></thead>
     <tbody>
       <tr><td>배경</td><td>순수 검정 <code>#000</code>. OLED라 꺼진 픽셀이 되어 전력과 번인 모두에 유리하다.</td></tr>
-      <tr><td>요일·월</td><td>“수 9월” 또는 “Wed Sep”. 요일은 노랑, 월은 흰색. 언어는 설정에서 선택.</td></tr>
-      <tr><td>큰 날짜</td><td>왼쪽 영역 높이의 약 35%. 굵은 산세리프, 숫자 폭 고정.</td></tr>
-      <tr><td>월 달력</td><td>월 이름(노랑, 대문자) + 요일 머리글 + 날짜 격자. 오늘은 노란 원, 주말은 회색. 주 시작 요일과 공휴일 표시는 설정.</td></tr>
-      <tr><td>시계 판</td><td>오른쪽 영역에 꽉 차는 둥근 사각형(슈퍼타원). 60개 눈금이 가장자리를 따라 배치되고 5분 눈금은 길고 굵다. 숫자는 12·3·6·9만.</td></tr>
-      <tr><td>시침·분침·초침</td><td>시·분침은 흰색 둥근 끝. 초침은 노란 가는 선, 끊김 없이 흐르는 스윕. 중심에 노란 점.</td></tr>
-      <tr><td>위젯 카드</td><td>짙은 회색 둥근 카드 2개를 좌우로. 카드 오른쪽 끝에 위아래 넘김 점 표시.</td></tr>
+      <tr><td>요일·월</td><td>“Fri Oct” 또는 “금요일 10월”. 요일은 주황, 월은 회색. 언어는 설정에서 선택.</td></tr>
+      <tr><td>큰 날짜</td><td>왼쪽 영역 높이의 약 32%. 굵은 산세리프, 요일 줄과 왼쪽 끝을 맞춘다.</td></tr>
+      <tr><td>월 달력</td><td>월 이름(주황, 대문자) + 요일 머리글 + 날짜 격자. 월요일 시작(설정에서 일요일로), 토·일은 머리글과 숫자 모두 회색, 오늘은 주황 원.</td></tr>
+      <tr><td>시계 판</td><td>가로·세로 길이가 같은 정사각 슈퍼타원. 오른쪽 영역이 세로로 길어도 늘리지 않는다. 60개 눈금이 가장자리를 따라 배치되고 5분 눈금은 길고 굵다. 숫자는 12·3·6·9만. 오른쪽 끝에 스타일 점 3개.</td></tr>
+      <tr><td>시침·분침·초침</td><td>시·분침은 라벤더빛 흰색 둥근 끝. 초침은 주황 가는 선, 끊김 없이 흐르는 스윕. 중심은 흰 고리 안 주황 점.</td></tr>
+      <tr><td>날씨</td><td>위: 지역(주황)·업데이트 시각. 가운데: 하늘 그림, 큰 기온, 상태·최고/최저·체감·습도·바람(오른쪽 정렬). 아래: 지금부터 7시간 예보.</td></tr>
       <tr><td>재생 중</td><td>왼쪽 정사각 앨범 아트, 오른쪽 곡명·가수·진행 막대·이전/재생/다음. 야간엔 앨범 아트를 흐리게.</td></tr>
     </tbody>
   </table></div>
 
   <h2>6. 오래 켜 둘 때 필요한 것</h2>
   <ul>
-    <li><b>번인 방지</b>: 1분마다 전체 화면을 3dp씩 9곳을 돌며 이동. 정적인 흰 숫자가 한 자리에 머물지 않게 한다.</li>
-    <li><b>야간 모드</b>: 조도 센서가 3 lx 아래면 모든 요소를 어두운 빨강으로 바꾸고 밝기를 최저로 낮춘다. 센서가 없으면 22시~6시. 설정에서 항상 켜거나 끌 수 있다.</li>
-    <li><b>야간 초침</b>: 밤에는 초침을 숨기고 매 프레임 대신 매초만 다시 그려 전력을 아낀다.</li>
+    <li><b>번인 방지</b>: 1분마다 전체 화면을 3dp씩 9곳을 돌며 이동. 정적인 흰 숫자가 한 자리에 머물지 않게 한다.</li>
+    <li><b>야간 모드</b>: 조도 센서가 3 lx 아래면 모든 요소를 어두운 빨강으로 바꾸고 밝기를 최저로 낮춘다. 센서가 없으면 22시~6시. 설정에서 항상 켜거나 끌 수 있다.</li>
+    <li><b>야간 초침</b>: 밤에는 초침을 숨기고 매 프레임 대신 매초만 다시 그려 전력을 아낀다.</li>
     <li><b>화면 켜짐</b>: Activity는 충전 중일 때만 <code>FLAG_KEEP_SCREEN_ON</code>. 배터리로 쓸 땐 시스템 꺼짐 시간을 따른다.</li>
     <li><b>갱신 주기</b>: 날씨 30분(실패하면 5분 뒤 재시도), 일정은 캘린더가 바뀌면 바로 + 5분마다, 음악은 미디어 세션 콜백. 화면이 꺼지면 구독이 모두 멈춘다.</li>
     <li><b>시간 동기화</b>: 날짜는 매분 정각에 다시 확인해 자정과 시간대 변경을 따라간다.</li>
+    <li><b>알람 전 은은한 빛</b>: 다음 알람 15분 전부터 호박색 빛과 화면 밝기를 천천히 올린다(처음엔 느리게). 울리는 알람 알림이 떠 있는 동안 최대로 유지하고, 알림 접근이 없으면 알람 1분 뒤에 끈다. 빛이 켜지면 야간 빨강보다 우선한다.</li>
+    <li><b>움직이면 깨우기</b>: 밤에만 가속도 센서를 켜고, 1분 동안 움직임(0.35 m/s² 넘는 흔들림)도 터치도 없으면 검은 덮개 93%와 밝기 0으로 거의 끈다.</li>
   </ul>
 
   <h2>7. 진행 순서</h2>
@@ -326,19 +389,23 @@ c.transportControls.skipToNext()</code></pre>
   <ol class="steps">
     <li><span class="t">개발 환경과 빈 프로젝트</span><span class="days">0.5일</span><span class="d"><span class="pill done">완료</span>Compose 프로젝트 생성, 빌드 성공. <span class="pill check">남음</span>폴드8 무선 디버깅 연결과 커버 화면 화면 보호기 검증.</span></li>
     <li><span class="t">달력+아날로그 시계 화면</span><span class="days">2일</span><span class="d"><span class="pill done">완료</span>커버 화면 1972×1248 에뮬레이터에서 사진과 나란히 비교.</span></li>
-    <li><span class="t">움직이는 시계와 시계 스타일</span><span class="days">2일</span><span class="d"><span class="pill done">완료</span>초침 스윕, 자정 날짜 넘김, 디지털·세계 시계·큰 날짜, 강조색 4개.</span></li>
+    <li><span class="t">움직이는 시계와 시계 스타일</span><span class="days">2일</span><span class="d"><span class="pill done">완료</span>초침 스윕, 자정 날짜 넘김, 디지털·큰 날짜, 강조색. 세계 시계는 이후 뺐다.</span></li>
     <li><span class="t">보기 전환 구조</span><span class="days">1.5일</span><span class="d"><span class="pill done">완료</span>좌우·위아래 스와이프, 마지막 보기 기억, 커버·펼침·반접기 배치.</span></li>
-    <li><span class="t">위젯 스택</span><span class="days">2.5일</span><span class="d"><span class="pill done">완료</span>일정·날씨·배터리·알람과 자동 넘김. 날씨는 실제 데이터로 확인.</span></li>
+    <li><span class="t">위젯 스택</span><span class="days">2.5일</span><span class="d"><span class="pill done">완료</span>이후 날씨 전체 화면 하나로 바꿨다.</span></li>
     <li><span class="t">재생 중 음악과 알림</span><span class="days">2.5일</span><span class="d"><span class="pill done">완료</span>권한 안내, 미디어 세션, 컨트롤, 알림 배너. <span class="pill check">남음</span>실제 음악 앱·알림으로 확인.</span></li>
     <li><span class="t">화면 보호기 연동</span><span class="days">1.5일</span><span class="d"><span class="pill done">완료</span>StandbyDream + Compose 연결 + 터치 허용. <span class="pill check">남음</span>폴드8에서 충전하며 실제로 뜨는지 확인.</span></li>
     <li><span class="t">야간 모드·번인 방지와 하룻밤 테스트</span><span class="days">2일</span><span class="d"><span class="pill done">완료</span>조도 센서 전환, 픽셀 이동. <span class="pill check">남음</span>충전하며 8시간 이상 켜 두고 발열·배터리·끊김 점검.</span></li>
   </ol>
-  <div class="phase">2차 · 약 1.5주</div>
+  <div class="phase">아이폰 듀오 반영 · 완료 (2026-10-24)</div>
   <ol class="steps" style="counter-reset: s 8">
-    <li><span class="t">사진 보기</span><span class="days">1.5일</span><span class="d">사진 선택기로 앨범 지정, 천천히 넘기기, 작은 시계 겹치기.</span></li>
-    <li><span class="t">진행 중 알림 크게 보기</span><span class="days">2일</span><span class="d">타이머(삼성 시계), 배달, 지도 안내 등 자주 쓰는 앱부터 맞춤 표시.</span></li>
-    <li><span class="t">충전 방식별 기억 · 다른 앱 위젯 · 공휴일</span><span class="days">2.5일</span><span class="d">유선/무선별 마지막 보기, AppWidgetHost, 달력에 공휴일 표시. 반접기 레이아웃은 1차에서 이미 넣었다.</span></li>
+    <li><span class="t">듀오 사진에 맞춘 시계 화면</span><span class="days">0.5일</span><span class="d"><span class="pill done">완료</span>정사각 시계판, 주황, 월요일 시작, 주말 회색, 오른쪽 세로 점. 폴드8에서 확인.</span></li>
+    <li><span class="t">날씨 전체 화면</span><span class="days">0.5일</span><span class="d"><span class="pill done">완료</span>위젯 묶음을 날씨 하나로, 시간별 예보와 밤 아이콘. 폴드8에서 확인.</span></li>
+    <li><span class="t">알람 전 은은한 빛 · 움직이면 깨우기</span><span class="days">1일</span><span class="d"><span class="pill done">완료</span>에뮬레이터에서 빛 상승·울리는 동안 유지·해제 후 복귀, 1분 뒤 어두워짐·흔들면 깨어남 확인.</span></li>
+    <li><span class="t">커버 화면 세로 달력</span><span class="days">0.2일</span><span class="d"><span class="pill done">완료</span>큰 날짜 축소, 달력 칸 높임. 폴드8 세로에서 확인.</span></li>
+    <li><span class="t">펼친 화면 50:50 · 사진 · 카메라 피하기</span><span class="days">1일</span><span class="d"><span class="pill done">완료</span>앨범 고르기, 사진 카드, 안쪽 화면 카메라 실측 위치 반영. 폴드8 펼친 상태에서 확인.</span></li>
+    <li><span class="t">펼친 화면 오른쪽 위젯 스택</span><span class="days">0.5일</span><span class="d"><span class="pill done">완료</span>사진 · 시계 · 날씨 · 재생 중을 위아래로, 세로 칸용 날씨. 폴드8에서 확인.</span></li>
   </ol>
+  <p class="note">충전 방식별 기억, 공휴일은 남은 후보와 함께 다시 고른다. 진행 중 알림과 다른 앱 위젯은 제외했다.</p>
 
   <h2>8. 폰에 설치하는 방법</h2>
   <ol>
@@ -346,7 +413,7 @@ c.transportControls.skipToNext()</code></pre>
     <li>개발자 옵션 › 무선 디버깅 켜기. Mac과 같은 와이파이에 연결.</li>
     <li>Android Studio에서 <code>~/Projects/fold-standby</code>를 열고 Device Manager › Pair Devices Using Wi-Fi에서 QR로 페어링.</li>
     <li>Run 버튼으로 설치. 터미널에서는 <code>./gradlew installDebug</code> (JAVA_HOME은 Android Studio 내장 JDK).</li>
-    <li>앱 목록에 아이콘 두 개가 생긴다. <b>StandBy 설정</b>에서 “화면 보호기 설정 열기” → Fold StandBy 선택 → 시작 조건 “충전 중”.</li>
+    <li>앱 목록에 아이콘 두 개가 생긴다. <b>StandBy 설정</b>에서 “화면 보호기 설정 열기” → Fold StandBy 선택 → 시작 조건 “충전 중”.</li>
     <li>같은 화면에서 캘린더·대략적 위치·알림 접근을 허용하고, 언어·강조색·야간 모드를 고른다. <b>StandBy</b> 아이콘은 충전기 없이 바로 화면을 연다.</li>
   </ol>
   <p class="note">이 Mac에서는 adb 서버가 그냥 켜지지 않고 멈춘다. <code>ADB_LIBUSB=1 adb start-server</code>로 켜면 동작한다.</p>
@@ -357,17 +424,19 @@ c.transportControls.skipToNext()</code></pre>
     <li><b>커버 화면에서 화면 보호기가 뜨는지</b>: 접은 상태로 충전할 때 삼성이 커버 화면에 화면 보호기를 띄우는지 실기기로 먼저 확인해야 한다. M1에서 가장 먼저 검증한다. 안 되면 B(직접 실행) + C(루틴)로 간다.</li>
     <li><b>Always On Display와의 충돌</b>: AOD가 켜져 있으면 화면 보호기 대신 AOD가 뜰 수 있다. 우선순위를 실기기로 확인.</li>
     <li><b>알림 접근 권한 제한</b>: 스토어 밖에서 받은 APK 파일은 안드로이드의 “제한된 설정” 때문에 알림 접근을 바로 켤 수 없다. Android Studio로 설치하면 대개 문제없지만, 막히면 앱 정보 › 제한된 설정 허용을 먼저 눌러야 한다.</li>
-    <li><b>화면 보호기 안의 접힘 감지</b>: WindowManager의 접힘 정보는 Activity 기준이라 DreamService 안에서는 제한될 수 있다. 그 경우 창 크기만으로 레이아웃을 고른다.</li>
-    <li><b>거치대</b>: 커버 화면을 가로로 세울 받침이 필요하다. 무선 충전 스탠드를 쓰면 “충전 + 세움”이 한 번에 해결된다.</li>
+    <li><b>화면 보호기 안의 접힘 감지</b>: WindowManager의 접힘 정보는 Activity 기준이라 DreamService 안에서는 제한될 수 있다. 그 경우 창 크기만으로 레이아웃을 고른다.</li>
+    <li><b>거치대</b>: 커버 화면을 가로로 세울 받침이 필요하다. 무선 충전 스탠드를 쓰면 “충전 + 세움”이 한 번에 해결된다.</li>
   </ul>
 
   <h2>10. 기본값으로 정한 것</h2>
   <p>열려 있던 질문은 “기본값으로 진행”으로 정리했다. 바꾸고 싶으면 대부분 설정 화면에서 바로 바꿀 수 있다.</p>
   <div class="qs">
-    <div class="q"><b>1차·2차 나눔</b><span>계획대로. 반접기 레이아웃만 1차로 당겼다.</span></div>
+    <div class="q"><b>범위</b><span>텐트 자동 실행·점수 카드·스마트홈·세계 시계·날씨 외 위젯은 하지 않는다(사용자 결정).</span></div>
     <div class="q"><b>자동 실행 조건</b><span>충전 중 화면 보호기. 회전만으로 켜지는 방법 D는 넣지 않았다.</span></div>
-    <div class="q"><b>날씨와 일정</b><span>일정은 폰에 연결된 모든 캘린더. 날씨는 대략적 위치, 권한이 없으면 서울.</span></div>
-    <div class="q"><b>표시 언어</b><span>사진처럼 영어(“Sat Oct”)가 기본, 설정에서 한국어로 전환. 주 시작은 일요일. 시간 형식은 폰 설정(12/24시간)을 따른다. 공휴일 표시는 2차.</span></div>
+    <div class="q"><b>날씨와 일정</b><span>날씨는 대략적 위치, 권한이 없으면 서울. 일정(아래 띠)은 폰에 연결된 모든 캘린더.</span></div>
+    <div class="q"><b>표시 언어</b><span>사진처럼 영어(“Sat Oct”)가 기본, 설정에서 한국어로 전환. 주 시작은 아이폰 듀오 사진처럼 월요일(설정에서 일요일). 시간 형식은 폰 설정(12/24시간)을 따른다. 공휴일 표시는 2차.</span></div>
+    <div class="q"><b>침대 옆 시계</b><span>알람 전 빛과 움직이면 깨우기는 기본으로 켜 두었다. 설정에서 따로 끌 수 있다.</span></div>
+    <div class="q"><b>펼친 화면 스택</b><span>사진 카드는 앨범을 골랐을 때만 들어간다. 사진은 섞어서 30초마다 바뀐다.</span></div>
     <div class="q"><b>빌드 방식</b><span>이 Mac의 <code>~/Projects/fold-standby</code>에 Android Studio 프로젝트로 만들었다.</span></div>
   </div>
 </div>
@@ -385,11 +454,11 @@ c.transportControls.skipToNext()</code></pre>
 
   // Z Fold8 화면을 세웠을 때의 픽셀 (폭 × 높이)
   const SPECS = { cover: [1972, 1248, '5.5″ 커버'], main: [2448, 1848, '7.6″ 메인'], flex: [1848, 2448, '7.6″ 메인 (세로로 돌려 반접기)'] };
-  const VIEWS = ['clock', 'digital', 'widgets', 'music'];
+  const VIEWS = ['clock', 'digital', 'weather', 'music'];
   const caps = {
-    clock: '사진과 같은 기본 보기. 왼쪽 달력, 오른쪽 둥근 사각 아날로그 시계.',
-    digital: '시계 보기의 다른 스타일. 실제 앱에선 위아래로 밀어 아날로그·디지털·세계 시계를 고른다.',
-    widgets: '위젯 보기. 좌우 카드는 각각 위아래로 넘기는 위젯 묶음이다. 표시된 일정과 날씨는 예시다.',
+    clock: '아이폰 듀오 스탠바이와 같은 기본 보기. 커버 화면은 왼쪽 40% 달력 + 정사각 시계와 스타일 점 3개, 펼친 화면은 좌우 반반에 오른쪽 위젯 스택 점 4개(사진 · 시계 · 날씨 · 재생 중, 여기선 시계 카드).',
+    digital: '시계 보기의 두 번째 스타일. 앱에선 위아래로 밀어 달력+아날로그 · 디지털 · 날짜만 크게를 고른다.',
+    weather: '날씨 보기. 화면 전체에 지역·하늘 그림·큰 기온·상태·최고최저·체감·습도·바람·시간별 예보. 숫자는 예시다.',
     music: '재생 중 보기. 음악 앱이 재생 중이면 곡 정보와 컨트롤을 크게 보여준다. 곡 정보는 예시다.'
   };
 
@@ -444,7 +513,7 @@ c.transportControls.skipToNext()</code></pre>
   function pal() {
     return night
       ? { y: '#b0241b', w: '#c8322a', sub: '#c8322a', dim: '#5c1410', tick: '#7a1a14', card: '#1a0605', todayFg: '#000' }
-      : { y: '#f5c542', w: '#ffffff', sub: '#cfe3ff', dim: '#6e6e6e', tick: '#d8d8d8', card: '#1c1c1e', todayFg: '#000' };
+      : { y: '#f59e2e', w: '#f0edf6', sub: '#a9a5b4', dim: '#6e6b76', tick: '#bdb9c6', card: '#1c1c1e', todayFg: '#fff' };
   }
   function rrect(x, y, w, h, r) {
     ctx.beginPath();
@@ -470,8 +539,8 @@ c.transportControls.skipToNext()</code></pre>
     ctx.fillStyle = p.sub; ctx.fillText(MON[now.getMonth()], x + pad + dw, y + h * 0.17);
 
     const fs2 = Math.min(h * 0.3, w * 0.42);
-    ctx.font = `700 ${fs2}px ${FONT}`; ctx.fillStyle = p.w; ctx.textAlign = 'center';
-    ctx.fillText(String(now.getDate()), x + pad + w * 0.2, y + h * 0.47);
+    ctx.font = `700 ${fs2}px ${FONT}`; ctx.fillStyle = p.w; ctx.textAlign = 'left';
+    ctx.fillText(String(now.getDate()), x + pad - fs2 * 0.04, y + h * 0.47);
 
     const top = y + h * 0.58, gw = w - pad * 1.6, cw = gw / 7;
     const fs3 = Math.min(cw * 0.42, h * 0.045);
@@ -479,10 +548,10 @@ c.transportControls.skipToNext()</code></pre>
     ctx.fillText(MONL[now.getMonth()], x + pad, top);
     const rowH = (y + h * 0.95 - top) / 7;
     ctx.textAlign = 'center';
-    'SMTWTFS'.split('').forEach((d, i) => {
-      ctx.fillStyle = p.w; ctx.fillText(d, x + pad + cw * (i + 0.5), top + rowH);
+    'MTWTFSS'.split('').forEach((d, i) => {
+      ctx.fillStyle = i >= 5 ? p.dim : p.w; ctx.fillText(d, x + pad + cw * (i + 0.5), top + rowH);
     });
-    const first = new Date(now.getFullYear(), now.getMonth(), 1).getDay();
+    const first = (new Date(now.getFullYear(), now.getMonth(), 1).getDay() + 6) % 7; // 월요일 시작
     const len = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
     for (let d = 1; d <= len; d++) {
       const idx = first + d - 1, col = idx % 7, row = Math.floor(idx / 7);
@@ -491,21 +560,22 @@ c.transportControls.skipToNext()</code></pre>
         ctx.fillStyle = p.y; ctx.beginPath();
         ctx.arc(cx, cy - fs3 * 0.36, Math.min(cw, rowH) * 0.46, 0, Math.PI * 2); ctx.fill();
         ctx.fillStyle = p.todayFg;
-      } else ctx.fillStyle = (col === 0 || col === 6) ? p.dim : p.w;
+      } else ctx.fillStyle = col >= 5 ? p.dim : p.w;
       ctx.fillText(String(d), cx, cy);
     }
   }
 
-  function drawClock(x, y, w, h, now, p) {
+  function drawClock(x, y, w, h, now, p, opt) {
+    opt = opt || {};
     const cx = x + w / 2, cy = y + h / 2;
-    const hw = w * 0.46, hh = h * 0.46, base = Math.min(hw, hh);
+    const hw = Math.min(w, h) * 0.46, hh = hw, base = hw; // 가로·세로가 같은 정사각 시계판
     ctx.lineCap = 'round';
     for (let i = 0; i < 60; i++) {
       const a = i / 60 * Math.PI * 2 - Math.PI / 2;
       const R = sr(a, hw, hh), major = i % 5 === 0;
       const inner = R - base * (major ? 0.13 : 0.06);
-      ctx.strokeStyle = major ? p.w : p.tick;
-      ctx.globalAlpha = major ? 1 : 0.55;
+      ctx.strokeStyle = major ? p.w : (opt.minor || p.tick);
+      ctx.globalAlpha = major || opt.minor ? 1 : 0.55;
       ctx.lineWidth = Math.max(1, base * (major ? 0.018 : 0.009));
       ctx.beginPath();
       ctx.moveTo(cx + Math.cos(a) * inner, cy + Math.sin(a) * inner);
@@ -532,7 +602,7 @@ c.transportControls.skipToNext()</code></pre>
     hand(m / 60, sr(m / 60 * Math.PI * 2 - Math.PI / 2, hw, hh) * 0.9, base * 0.04, p.w);
     if (!night) {
       const sa = s / 60 * Math.PI * 2 - Math.PI / 2;
-      ctx.strokeStyle = p.y; ctx.lineWidth = Math.max(1, base * 0.01);
+      ctx.strokeStyle = opt.sec || p.y; ctx.lineWidth = Math.max(1, base * 0.01);
       ctx.beginPath();
       ctx.moveTo(cx - Math.cos(sa) * base * 0.12, cy - Math.sin(sa) * base * 0.12);
       ctx.lineTo(cx + Math.cos(sa) * sr(sa, hw, hh) * 0.95, cy + Math.sin(sa) * sr(sa, hw, hh) * 0.95);
@@ -556,39 +626,56 @@ c.transportControls.skipToNext()</code></pre>
     ctx.fillText(`${DAYS[now.getDay()]} ${MON[now.getMonth()]} ${now.getDate()}`, x + w * 0.5, y + h * 0.88);
   }
 
-  function card(x, y, w, h, p, dots, active) {
-    ctx.fillStyle = p.card; rrect(x, y, w, h, Math.min(w, h) * 0.12); ctx.fill();
-    const r = Math.max(1.5, h * 0.012);
-    for (let i = 0; i < dots; i++) {
-      ctx.fillStyle = i === active ? p.w : p.dim;
-      ctx.beginPath(); ctx.arc(x + w - r * 4, y + h / 2 + (i - (dots - 1) / 2) * r * 4, r, 0, Math.PI * 2); ctx.fill();
+  // 앱의 하늘 그림과 같은 모양
+  function skyIcon(kind, cx, cy, s, p) {
+    const cloud = (dy) => {
+      ctx.fillStyle = p.w;
+      ctx.beginPath(); ctx.arc(cx - s * 0.08, cy + s * 0.05 + dy, s * 0.17, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(cx + s * 0.1, cy - s * 0.02 + dy, s * 0.22, 0, Math.PI * 2); ctx.fill();
+      rrect(cx - s * 0.25, cy + s * 0.05 + dy, s * 0.6, s * 0.17, s * 0.085); ctx.fill();
+    };
+    if (kind === 'moon') {
+      ctx.fillStyle = p.sub; ctx.beginPath(); ctx.arc(cx - s * 0.12, cy - s * 0.14, s * 0.2, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(cx - s * 0.03, cy - s * 0.2, s * 0.17, 0, Math.PI * 2); ctx.fill();
+      cloud(s * 0.08);
+    } else if (kind === 'sun') {
+      ctx.fillStyle = p.y; ctx.beginPath(); ctx.arc(cx - s * 0.12, cy - s * 0.14, s * 0.18, 0, Math.PI * 2); ctx.fill();
+      cloud(s * 0.08);
+    } else cloud(0);
+  }
+
+  // 날씨 보기: 화면 전체 (숫자는 예시)
+  function drawWeather(x, y, w, h, now, p) {
+    const u = Math.min(h, w * 0.62), px = x + w * 0.05, rx = x + w * 0.95;
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'left'; ctx.font = `700 ${u * 0.075}px ${FONT}`; ctx.fillStyle = p.y; ctx.fillText('서울 · 예시', px, y + h * 0.1);
+    ctx.textAlign = 'right'; ctx.font = `500 ${u * 0.045}px ${FONT}`; ctx.fillStyle = p.dim;
+    ctx.fillText(`업데이트 ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`, rx, y + h * 0.1);
+    const midY = y + h * 0.42, nightNow = now.getHours() >= 18 || now.getHours() < 6;
+    skyIcon(nightNow ? 'moon' : 'sun', px + u * 0.17, midY, u * 0.38, p);
+    ctx.textAlign = 'left'; ctx.font = `300 ${u * 0.34}px ${FONT}`; ctx.fillStyle = p.w; ctx.fillText('17°', px + u * 0.38, midY);
+    const lines = [['구름 조금', 0.075, p.w, 700], ['최고 18° · 최저 14°', 0.06, p.sub, 500], ['체감 17°', 0.05, p.dim, 500], ['습도 82%', 0.05, p.dim, 500], ['바람 2m/s', 0.05, p.dim, 500]];
+    ctx.textAlign = 'right';
+    let ly = y + h * 0.24;
+    lines.forEach(([t, k, c, wt]) => { ctx.font = `${wt} ${u * k}px ${FONT}`; ctx.fillStyle = c; ctx.fillText(t, rx, ly); ly += u * k * 1.35; });
+    const temps = [17, 17, 16, 16, 16, 15, 15], cw = (rx - px) / 7, hy = y + h * 0.8;
+    for (let i = 0; i < 7; i++) {
+      const cx = px + cw * (i + 0.5), hr = (now.getHours() + i) % 24;
+      ctx.textAlign = 'center'; ctx.font = `500 ${u * 0.045}px ${FONT}`; ctx.fillStyle = p.dim;
+      ctx.fillText(i === 0 ? '지금' : `${hr}시`, cx, hy - u * 0.1);
+      skyIcon(i % 2 ? (hr >= 18 || hr < 6 ? 'moon' : 'sun') : 'cloud', cx, hy, u * 0.11, p);
+      ctx.font = `600 ${u * 0.06}px ${FONT}`; ctx.fillStyle = p.w; ctx.fillText(`${temps[i]}°`, cx, hy + u * 0.11);
     }
   }
 
-  function drawWidgets(x, y, w, h, now, p) {
-    const gap = w * 0.025, cw = (w - gap * 3) / 2, ch = h - gap * 2;
-    const lx = x + gap, rx = x + gap * 2 + cw, ty = y + gap;
-    // 왼쪽: 오늘 일정
-    card(lx, ty, cw, ch, p, 3, 0);
-    const u = Math.min(cw * 0.07, ch * 0.09);
-    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
-    ctx.font = `700 ${u * 0.8}px ${FONT}`; ctx.fillStyle = p.y;
-    ctx.fillText(`${DAYS[now.getDay()].toUpperCase()} ${now.getDate()}`, lx + u, ty + u * 1.8);
-    const ev = [['10:00', '주간 회의'], ['14:30', '디자인 리뷰'], ['19:00', '저녁 약속']];
-    ev.forEach(([t, n], i) => {
-      const yy = ty + u * (3.4 + i * 2.2);
-      ctx.fillStyle = p.y; ctx.fillRect(lx + u, yy - u * 1.05, Math.max(2, u * 0.12), u * 1.5);
-      ctx.fillStyle = p.w; ctx.font = `600 ${u * 0.82}px ${FONT}`; ctx.fillText(n, lx + u * 1.5, yy - u * 0.2);
-      ctx.fillStyle = p.dim; ctx.font = `500 ${u * 0.62}px ${FONT}`; ctx.fillText(t + ' · 예시', lx + u * 1.5, yy + u * 0.55);
-    });
-    // 오른쪽: 날씨
-    card(rx, ty, cw, ch, p, 4, 1);
-    ctx.fillStyle = p.w; ctx.font = `600 ${u * 0.8}px ${FONT}`; ctx.fillText('서울 · 예시', rx + u, ty + u * 1.8);
-    ctx.font = `300 ${u * 3.6}px ${FONT}`; ctx.fillText('14°', rx + u * 0.8, ty + u * 5.6);
-    const sunX = rx + cw - u * 3.4, sunY = ty + u * 3.4;
-    ctx.fillStyle = p.y; ctx.beginPath(); ctx.arc(sunX, sunY, u * 1.1, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = p.sub; ctx.font = `500 ${u * 0.7}px ${FONT}`;
-    ctx.fillText('맑음  최고 18° 최저 9°', rx + u, ty + ch - u * 1.1);
+  // 오른쪽 끝 세로 스타일 점 (아이폰 듀오)
+  function styleDots(x, y, w, h, active, p, n) {
+    n = n || 3;
+    const r = h * 0.0055, cx = x + w - w * 0.012 - r;
+    for (let i = 0; i < n; i++) {
+      ctx.fillStyle = i === active ? p.w : p.dim;
+      ctx.beginPath(); ctx.arc(cx, y + h / 2 + (i - (n - 1) / 2) * r * 3.6, r, 0, Math.PI * 2); ctx.fill();
+    }
   }
 
   function drawMusic(x, y, w, h, now, p) {
@@ -617,9 +704,10 @@ c.transportControls.skipToNext()</code></pre>
   }
 
   function drawView(x, y, w, h, now, p) {
-    if (view === 'clock') { drawDate(x, y, w * 0.4, h, now, p); drawClock(x + w * 0.4, y + h * 0.04, w * 0.57, h * 0.92, now, p); }
-    else if (view === 'digital') drawDigital(x, y, w, h, now, p);
-    else if (view === 'widgets') drawWidgets(x, y, w, h, now, p);
+    if (view === 'clock' && mode !== 'cover') { drawDate(x, y, w * 0.5, h, now, p); drawClock(x + w * 0.5, y + h * 0.04, w * 0.48, h * 0.92, now, p); styleDots(x, y, w, h, 1, p, 4); }
+    else if (view === 'clock') { drawDate(x, y, w * 0.4, h, now, p); drawClock(x + w * 0.4, y + h * 0.04, w * 0.57, h * 0.92, now, p); styleDots(x, y, w, h, 0, p); }
+    else if (view === 'digital') { drawDigital(x, y, w, h, now, p); styleDots(x, y, w, h, 1, p); }
+    else if (view === 'weather') drawWeather(x, y, w, h, now, p);
     else drawMusic(x, y, w, h, now, p);
   }
 

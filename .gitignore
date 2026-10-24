@@ -14,3 +14,13 @@ docs/fold8-unfolded-stack.png
 docs/emu-unfolded-photos.png
 
 .DS_Store
+
+# 작업용 내부 문서(이 Mac의 ~/Projects 규칙용). GitHub에는 올리지 않는다.
+AGENTS.md
+STATUS.md
+DECISIONS.md
+docs/plan.html
+docs/plan-v[1-5].html
+# 개발 중 찍은 화면(공개용은 docs/screenshots/)
+docs/emu-*.png
+docs/fold8-*.png
