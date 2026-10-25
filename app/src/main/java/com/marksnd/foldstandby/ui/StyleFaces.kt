@@ -243,46 +243,105 @@ private fun ColumnScope.AgendaColumn(today: LocalDate, agenda: AgendaState, s: A
         MonthGrid(today, Modifier.fillMaxWidth().weight(1f))
         return
     }
-    // 남은 높이 안에 들어가게 센다: 내일 칸을 먼저 잡아 두고, 오늘 일정은 남는 만큼만 보여주고 나머지는 +N.
+    // 남은 높이 안에 들어가게 센다. 내일은 제목과 한 줄을 늘 잡아 두고, 남는 높이는 오늘 일정에 먼저 준다.
+    // 못 보여준 일정은 숨기지 않고 +N으로 알린다.
     BoxWithConstraints(Modifier.fillMaxWidth().weight(1f)) {
-        val labelH = s.label * 1.15f
-        val eventH = s.title * 1.12f + s.sub * 1.12f + s.sub * 0.6f
-        val lineH = s.sub * 1.1f * 1.12f + s.sub * 0.25f
-        val moreH = s.sub * 1.12f + s.sub * 0.25f
         val today = timedFirst(agenda.events)
         val tomorrow = timedFirst(agenda.tomorrow)
-        val tShow = minOf(TOMORROW_MAX, tomorrow.size)
-        val tomorrowH = if (tomorrow.isEmpty()) 0f
-        else (s.label * 0.6f + labelH + lineH * tShow + (if (tomorrow.size > tShow) moreH else s.sub * 0f)) / s.sub
-        val roomForToday = (maxHeight - labelH - s.label * 0.4f) / s.sub - tomorrowH
-        var fit = (roomForToday / (eventH / s.sub)).toInt()
-        if (today.size > fit) fit = ((roomForToday - moreH / s.sub) / (eventH / s.sub)).toInt()
-        val todayShow = minOf(today.size, todayMax, fit.coerceAtLeast(1))
+        val fit = fitAgenda(
+            room = maxHeight.value,
+            todayCount = today.size,
+            tomorrowCount = tomorrow.size,
+            todayMax = todayMax,
+            h = AgendaHeights(
+                todayHead = (s.label * ROUNDED_LINE + s.label * 0.4f).value,
+                empty = (s.title * 0.9f * ROUNDED_LINE).value,
+                event = (s.title * ROUNDED_LINE + s.sub * ROUNDED_LINE).value,
+                eventGap = (s.sub * 0.6f).value,
+                more = (s.sub * ROUNDED_LINE + s.sub * 0.25f).value,
+                tomorrowHead = (s.label * 0.6f + s.label * ROUNDED_LINE).value,
+                line = (s.sub * 1.1f * ROUNDED_LINE + s.sub * 0.25f).value,
+            ),
+        )
         Column {
             Label(if (korean) "오늘" else "TODAY", s.label, p.accent, weight = FontWeight.Black, family = Rounded, letterSpacing = 0.06.em)
             Spacer(Modifier.height(s.label * 0.4f))
             if (today.isEmpty()) {
                 Label(if (korean) "남은 일정 없음" else "No more events", s.title * 0.9f, p.dim, weight = FontWeight.ExtraBold, family = Rounded)
             }
-            today.take(todayShow).forEach { e ->
+            today.take(fit.todayShow).forEachIndexed { i, e ->
+                // 일정 사이에만 간격을 둔다(마지막 일정 뒤에는 +N이나 내일 제목이 제 간격을 갖고 온다).
+                if (i > 0) Spacer(Modifier.height(s.sub * 0.6f))
                 EventLine(e, s, korean)
-                Spacer(Modifier.height(s.sub * 0.6f))
             }
-            MoreCount(today.size - todayShow, s, korean)
+            MoreCount(today.size - fit.todayShow, s, korean)
             if (tomorrow.isNotEmpty()) {
                 Spacer(Modifier.height(s.label * 0.6f))
                 Label(if (korean) "내일" else "TOMORROW", s.label, p.secondary, weight = FontWeight.Black, family = Rounded, letterSpacing = 0.06.em)
-                tomorrow.take(tShow).forEach { e ->
+                val hidden = tomorrow.size - fit.tomorrowShow
+                tomorrow.take(fit.tomorrowShow).forEachIndexed { i, e ->
                     val time = if (e.allDay) (if (korean) "종일" else "All day") else eventTime(e.begin, korean)
-                    Label("$time  ${e.title}", s.sub * 1.1f, p.secondary, Modifier.padding(top = s.sub * 0.25f), weight = FontWeight.Bold, family = Rounded)
+                    // +N 줄을 둘 높이가 없으면 마지막 줄 끝에 붙인다.
+                    val inlineMore = if (i == fit.tomorrowShow - 1 && hidden > 0 && !fit.tomorrowMoreLine) "  +$hidden" else ""
+                    Label("$time  ${e.title}$inlineMore", s.sub * 1.1f, p.secondary, Modifier.padding(top = s.sub * 0.25f), weight = FontWeight.Bold, family = Rounded)
                 }
-                MoreCount(tomorrow.size - tShow, s, korean)
+                if (fit.tomorrowMoreLine) MoreCount(hidden, s, korean)
             }
         }
     }
 }
 
+/** 일정 칸 각 부분의 높이(dp). */
+internal data class AgendaHeights(
+    val todayHead: Float,
+    val empty: Float,
+    val event: Float,
+    val eventGap: Float,
+    val more: Float,
+    val tomorrowHead: Float,
+    val line: Float,
+)
+
+/** 오늘 [todayShow]개, 내일 [tomorrowShow]줄을 보여주고, 내일의 나머지는 [tomorrowMoreLine]이면 따로 한 줄, 아니면 마지막 줄 끝에 +N. */
+internal data class AgendaFit(val todayShow: Int, val tomorrowShow: Int, val tomorrowMoreLine: Boolean)
+
+/**
+ * [room] 높이 안에 들어갈 만큼 센다.
+ * 1. 내일 일정이 있으면 내일 제목과 한 줄을 먼저 잡는다.
+ * 2. 남는 높이를 오늘 일정에 준다(최대 [todayMax]개). 다 못 보여주면 +N 줄 자리도 뺀다. 오늘 일정이 있으면 적어도 하나는 보여준다.
+ * 3. 그래도 남으면 내일 둘째 줄([TOMORROW_MAX]까지), 그다음 내일 +N 줄.
+ */
+internal fun fitAgenda(room: Float, todayCount: Int, tomorrowCount: Int, todayMax: Int, h: AgendaHeights): AgendaFit {
+    var left = room - h.todayHead
+    if (tomorrowCount > 0) left -= h.tomorrowHead + h.line
+    var todayShow = 0
+    if (todayCount == 0) {
+        left -= h.empty
+    } else {
+        val limit = minOf(todayCount, todayMax)
+        // n개는 일정 n개 + 사이 간격 n-1개
+        fun fits(space: Float) = ((space + h.eventGap) / (h.event + h.eventGap)).toInt().coerceAtLeast(0)
+        todayShow = minOf(limit, fits(left))
+        if (todayShow < todayCount) todayShow = minOf(todayShow, fits(left - h.more))
+        todayShow = todayShow.coerceAtLeast(1)
+        left -= h.event * todayShow + h.eventGap * (todayShow - 1) + if (todayShow < todayCount) h.more else 0f
+    }
+    var tomorrowShow = if (tomorrowCount > 0) 1 else 0
+    while (tomorrowShow < minOf(TOMORROW_MAX, tomorrowCount) && left >= h.line) {
+        left -= h.line
+        tomorrowShow++
+    }
+    val moreLine = tomorrowCount > tomorrowShow && left >= h.more
+    return AgendaFit(todayShow, tomorrowShow, moreLine)
+}
+
 private const val TOMORROW_MAX = 2
+
+/**
+ * 둥근 글꼴(Nunito) 한 줄이 실제로 차지하는 높이 ÷ 글자 크기. Label의 줄 높이(1.12)보다 글꼴 자체 높이
+ * (ascent 1.011 + descent 0.353)가 커서 글꼴 높이를 따른다. 화면 스냅숏에서 잰 값 1.36에 여유를 조금 둔다.
+ */
+private const val ROUNDED_LINE = 1.37f
 
 /** 시간이 있는 일정을 시작 순으로 먼저, 종일 일정은 뒤로. 종일 일정이 많아도 약속이 밀려나지 않게. */
 private fun timedFirst(events: List<AgendaEvent>) = events.sortedWith(compareBy({ it.allDay }, { it.begin }))
