@@ -28,6 +28,7 @@ import java.util.TimeZone
  * 이미지는 app/screenshots/에 있다. 화면을 일부러 바꿨으면 기준을 다시 만들고 바뀐 그림을 눈으로 확인한 뒤 커밋한다.
  *
  * 크기(450dpi 기준 dp): 폴드8 커버 701×444, 폴드8 펼침 870×657, 플립8 메인 896×384, 플립8 커버 337×373
+ *   좁은 세로: 21:9(폴드7·폴드8 울트라 커버, 플립8 메인) 384×896, 19.5:9(S23 FE·S24 울트라) 384×832
  */
 private const val FOLD8_COVER_LAND = "w701dp-h444dp-land-450dpi"
 private const val FOLD8_COVER_PORT = "w444dp-h701dp-port-450dpi"
@@ -36,6 +37,7 @@ private const val FOLD8_INNER_PORT = "w657dp-h870dp-port-450dpi"
 private const val FLIP8_LAND = "w896dp-h384dp-land-450dpi"
 private const val FLIP8_PORT = "w384dp-h896dp-port-450dpi"
 private const val FLIP8_COVER = "w337dp-h373dp-port-450dpi"
+private const val GALAXY_S_PORT = "w384dp-h832dp-port-450dpi"
 
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
@@ -98,4 +100,8 @@ class StandbyScreenshotTest {
     @Config(qualifiers = FLIP8_PORT) @Test fun flip8Tabletop() = shoot("flip8_tabletop_clock", Posture.Tabletop)
     @Config(qualifiers = FLIP8_PORT) @Test fun flip8TabletopDigital() = shoot("flip8_tabletop_digital", Posture.Tabletop) { nextStyle(tabletop = true) }
     @Config(qualifiers = FLIP8_COVER) @Test fun flip8Cover() = shoot("flip8_cover_clock")
+
+    // 좁은 세로 화면: 달력 스타일의 큰 날짜와 시각이 한 줄에 들어가야 한다.
+    @Config(qualifiers = FLIP8_PORT) @Test fun narrow21x9Calendar() = shoot("narrow_21x9_port_calendar") { nextStyle(); composeRule.waitForIdle(); nextStyle() }
+    @Config(qualifiers = GALAXY_S_PORT) @Test fun galaxySPortraitCalendar() = shoot("galaxy_s_port_calendar") { nextStyle(); composeRule.waitForIdle(); nextStyle() }
 }

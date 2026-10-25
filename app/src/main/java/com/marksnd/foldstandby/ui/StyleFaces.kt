@@ -211,12 +211,16 @@ fun CalendarFace(today: LocalDate, agenda: AgendaState, showTime: Boolean = true
                 AgendaColumn(today, agenda, AgendaSizes(h * 0.04f, h * 0.05f, h * 0.04f, h * 0.05f, h * 0.04f), todayMax = 3)
             }
         } else {
+            // 큰 날짜와 시각은 한 줄에 놓인다. 좁고 긴 세로 화면(21:9, 19.5:9)에서는 높이만 따르면
+            // 둘을 합친 폭이 화면보다 넓어져 시각이 잘리므로, 폭에 맞춘 크기를 넘지 않게 한다.
+            val daySize = minOf(h * 0.19f, w * 0.40f)
+            val timeSize = minOf(h * 0.07f, w * 0.12f)
             Column(Modifier.fillMaxSize().padding(start = w * 0.08f, end = w * 0.08f, top = h * 0.06f, bottom = h * 0.04f)) {
                 Label(weekday, h * 0.034f, p.accent, weight = FontWeight.Black, family = Rounded, letterSpacing = 0.1.em)
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
-                    Label(today.dayOfMonth.toString(), h * 0.19f, p.primary, weight = FontWeight.Black, family = Rounded, letterSpacing = (-0.04).em)
+                    Label(today.dayOfMonth.toString(), daySize, p.primary, weight = FontWeight.Black, family = Rounded, letterSpacing = (-0.04).em)
                     Spacer(Modifier.weight(1f))
-                    if (showTime) TimeWithAmPm(hm, ap, h * 0.07f, Modifier.padding(bottom = h * 0.016f))
+                    if (showTime) TimeWithAmPm(hm, ap, timeSize, Modifier.padding(bottom = h * 0.016f))
                 }
                 Label(monthYear, h * 0.032f, p.secondary, weight = FontWeight.ExtraBold, family = Rounded)
                 Spacer(Modifier.height(h * 0.04f))
