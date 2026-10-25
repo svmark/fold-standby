@@ -81,6 +81,18 @@ android {
     }
 }
 
+// Android Lint 도구도 따로 가져오는 라이브러리 중 보안 문제가 알려진 것을 고친 버전으로 올린다(루트 build.gradle.kts와 같은 목록).
+// 앱(APK)에는 들어가지 않는다.
+configurations.matching { it.name == "androidLintTool" }.configureEach {
+    resolutionStrategy.force(
+        "org.bouncycastle:bcprov-jdk18on:1.85",
+        "org.bouncycastle:bcpkix-jdk18on:1.85",
+        "org.bouncycastle:bcutil-jdk18on:1.85",
+        "org.apache.commons:commons-lang3:3.18.0",
+        "org.apache.httpcomponents:httpclient:4.5.14",
+    )
+}
+
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
