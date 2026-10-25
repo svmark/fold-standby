@@ -16,7 +16,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -60,19 +59,15 @@ fun AnalogCalendarFace(
     showSeconds: Boolean,
     smooth: Boolean,
 ) {
-    // 펼친 안쪽 화면(가장 짧은 변 600dp 이상)과 플립처럼 아주 길쭉한 화면(2:1 이상)에서는 좌우를 반씩 나눈다.
-    // 반쪽이 정사각형에 가까워지고, 책처럼 살짝 접어 세우면 접힘선 왼쪽은 달력, 오른쪽은 시계가 된다.
-    val innerDisplay = LocalConfiguration.current.smallestScreenWidthDp >= 600
+    // 나눔 비율은 LayoutRules.dateClockSplit: 펼친 안쪽 화면과 플립처럼 길쭉한 화면은 반씩.
+    // 책처럼 살짝 접어 세우면 접힘선 왼쪽은 달력, 오른쪽은 시계가 된다.
+    val inner = innerDisplay()
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val landscape = maxWidth > maxHeight
         val pad = minOf(maxWidth, maxHeight) * 0.04f
         Split(
             landscape = landscape,
-            firstWeight = when {
-                landscape && (innerDisplay || maxWidth / maxHeight >= 2f) -> 0.5f
-                landscape -> 0.4f
-                else -> 0.45f
-            },
+            firstWeight = dateClockSplit(inner, maxWidth, maxHeight),
             first = { DatePanel(today, Modifier.fillMaxSize()) },
             second = {
                 SquircleClock(

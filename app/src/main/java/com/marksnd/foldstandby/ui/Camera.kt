@@ -2,7 +2,6 @@ package com.marksnd.foldstandby.ui
 
 import android.content.Context
 import android.graphics.Rect
-import android.os.Build
 import android.view.Surface
 import android.view.WindowManager
 import androidx.compose.foundation.layout.padding
@@ -19,25 +18,20 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import com.marksnd.foldstandby.data.DeviceProfiles
 import kotlin.math.max
 
 /*
  * 폴드8 안쪽 화면의 전면 카메라는 화면 아래 카메라(UDC)라서 시스템이 앱에 화면 가림(cutout)으로 알려주지 않는다.
- * 실기기에서 읽은 값: adb shell dumpsys window displays → mDisplayId=0 udcCutout
- *   자연 방향(가로) 2448×1848px 기준 boundingRect = (1823, 18) – (1901, 96), 오른쪽 위.
+ * 기기별 위치는 data/DeviceProfile.kt에 있다.
  */
-private const val INNER_W = 2448f
-private const val INNER_H = 1848f
-private val INNER_CAMERA = Rect(1823, 18, 1901, 96)
 
 /** 카메라와 사진 사이에 둘 여백. */
 private val CAMERA_MARGIN = 12.dp
 
-private fun isFold8() = Build.MANUFACTURER.equals("samsung", ignoreCase = true) && Build.MODEL.startsWith("SM-F971")
-
 /** 지금 회전 상태의 창 좌표로 옮긴 안쪽 화면 카메라 위치. 안쪽 화면이 아니면 null. */
 private fun innerCameraInWindow(context: Context): Rect? {
-    if (!isFold8()) return null
+    val camera = DeviceProfiles.current.innerCamera ?: return null
     val wm = context.getSystemService(WindowManager::class.java) ?: return null
     val bounds = wm.currentWindowMetrics.bounds
     val rotation = context.display?.rotation ?: Surface.ROTATION_0
@@ -46,12 +40,12 @@ private fun innerCameraInWindow(context: Context): Rect? {
     val naturalH = if (sideways) bounds.width() else bounds.height()
     // 커버 화면(1248×1972)이면 안쪽 화면 카메라는 해당 없음. 해상도 설정을 낮췄을 때를 위해 비율로 맞춘다.
     if (naturalW <= naturalH) return null
-    val s = naturalW / INNER_W
-    if (kotlin.math.abs(naturalH / s - INNER_H) > 40) return null
-    val l = INNER_CAMERA.left * s
-    val t = INNER_CAMERA.top * s
-    val r = INNER_CAMERA.right * s
-    val b = INNER_CAMERA.bottom * s
+    val s = naturalW / camera.displayWidth.toFloat()
+    if (kotlin.math.abs(naturalH / s - camera.displayHeight) > 40) return null
+    val l = camera.left * s
+    val t = camera.top * s
+    val r = camera.right * s
+    val b = camera.bottom * s
     val w = naturalW.toFloat()
     val h = naturalH.toFloat()
     return when (rotation) {

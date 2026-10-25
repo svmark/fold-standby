@@ -41,11 +41,8 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import androidx.window.layout.FoldingFeature
-import androidx.window.layout.WindowLayoutInfo
 import com.marksnd.foldstandby.data.AgendaState
 import com.marksnd.foldstandby.data.NightMode
 import com.marksnd.foldstandby.data.MediaState
@@ -68,18 +65,6 @@ import com.marksnd.foldstandby.data.rememberWeather
 import com.marksnd.foldstandby.service.NotificationBus
 import kotlin.math.roundToInt
 
-enum class Posture { Flat, Tabletop }
-
-/** 가로 접힘선으로 반쯤 접혀 있으면 반접기(노트북) 자세다. */
-fun postureOf(info: WindowLayoutInfo): Posture {
-    val fold = info.displayFeatures.filterIsInstance<FoldingFeature>().firstOrNull()
-    return if (fold?.state == FoldingFeature.State.HALF_OPENED && fold.orientation == FoldingFeature.Orientation.HORIZONTAL) {
-        Posture.Tabletop
-    } else {
-        Posture.Flat
-    }
-}
-
 /** 화면 밝기를 0~1로 정한다. null이면 시스템 밝기를 따른다. */
 fun applyBrightness(window: Window, level: Float?) {
     window.attributes = window.attributes.apply {
@@ -97,7 +82,6 @@ private const val SLEEP_AFTER_MS = 60_000L
 private val Amber = Color(0xFFFFA94D)
 
 private const val PAGE_COUNT = 3
-private const val CLOCK_STYLES = 3
 
 /**
  * 스탠바이 화면 전체. Activity와 화면 보호기가 같이 쓴다.
@@ -194,11 +178,8 @@ fun StandbyScreen(
                     }
                 },
         ) {
-            val landscape = maxWidth > maxHeight
-            val tabletop = posture == Posture.Tabletop
-            // 펼친 메인 화면(4:3)은 커버 화면(약 1.58:1)보다 덜 길쭉하다. 남는 아래 공간에 일정을 둔다.
-            val strip = landscape && !tabletop && maxWidth / maxHeight < 1.45f
-            if (tabletop) {
+            val layout = screenLayout(maxWidth, maxHeight, posture)
+            if (layout == ScreenLayout.Tabletop) {
                 // 반쯤 접어 세우면 접힘선에서 정확히 반으로 나눈다(화면 가림 여백은 윗면에만).
                 // 윗면은 시계, 아랫면은 날짜와 오늘·내일 일정.
                 Column(Modifier.fillMaxSize().offset { shift }) {
@@ -216,6 +197,7 @@ fun StandbyScreen(
                         .windowInsetsPadding(WindowInsets.displayCutout)
                         .offset { shift },
                 ) {
+                    val strip = layout == ScreenLayout.WithAgendaStrip
                     Box(Modifier.fillMaxWidth().weight(if (strip) 5f else 1f)) {
                         StandbyPages(store, settings, night, openCount, agenda, nextAlarm, deskBelow = false)
                     }
@@ -262,9 +244,8 @@ private fun StandbyPages(
     val today by rememberToday()
     val weather by rememberWeather(korean)
     val media by rememberNowPlaying()
-    // 펼친 안쪽 화면에서만 사진 앨범을 읽는다.
-    val innerDisplay = LocalConfiguration.current.smallestScreenWidthDp >= 600
-    val photos by rememberAlbumPhotos(settings.photoAlbumId.takeIf { innerDisplay && settings.unfoldedPhotos })
+    val inner = innerDisplay()
+    val photos by rememberAlbumPhotos(settings.photoAlbumId.takeIf { showsAlbumPhotos(inner, settings.unfoldedPhotos) })
 
     HorizontalPager(pager, Modifier.fillMaxSize()) { page ->
         when (page) {
@@ -290,10 +271,9 @@ private fun ClockPage(
     nextAlarm: Long?,
     deskBelow: Boolean,
 ) {
-    // 펼친 안쪽 화면을 가로로 두면 왼쪽 달력 + 오른쪽 위젯 스택. 위아래 넘김은 오른쪽 스택이 쓴다.
-    val innerDisplay = LocalConfiguration.current.smallestScreenWidthDp >= 600
+    val inner = innerDisplay()
     BoxWithConstraints(Modifier.fillMaxSize()) {
-        if (innerDisplay && maxWidth > maxHeight && !deskBelow) {
+        if (clockPageLayout(inner, maxWidth, maxHeight, deskBelow) == ClockPageLayout.UnfoldedStack) {
             UnfoldedFace(store, now, tick, today, night, photos, weather, media)
         } else {
             ClockStyles(openCount, now, today, night, weather, agenda, nextAlarm, deskBelow)
@@ -312,8 +292,7 @@ private fun ClockStyles(
     nextAlarm: Long?,
     deskBelow: Boolean,
 ) {
-    // 반접기에서는 아랫면이 날짜·일정을 보여주므로 윗면은 시계만(정사각 시계, 디지털).
-    val count = if (deskBelow) 2 else CLOCK_STYLES
+    val count = clockStyleCount(deskBelow)
     val styles = rememberPagerState { count }
     LaunchedEffect(openCount) { if (styles.currentPage != 0) styles.scrollToPage(0) }
     Box(Modifier.fillMaxSize()) {
