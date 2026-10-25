@@ -11,7 +11,7 @@
 
 ## 스크린샷
 
-예시 데이터로 찍은 화면이에요. 일정과 사진은 예시이고, 날씨는 실제 서울 날씨예요. 사진 카드의 양귀비 사진은 George Chernilevsky의 퍼블릭 도메인 사진이에요([Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Poppies_bouquet_2017_G1.jpg)).
+예시 데이터로 찍은 화면이에요. 일정과 사진은 예시이고, 날씨는 실제 서울 날씨예요. 사진 카드의 팬케이크 사진은 Joseph Gonzalez의 CC0 사진이에요([Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Pancakes_(Unsplash).jpg)).
 
 | 커버 화면 · 달력 + 시계 (기본) | 디지털 |
 |---|---|
