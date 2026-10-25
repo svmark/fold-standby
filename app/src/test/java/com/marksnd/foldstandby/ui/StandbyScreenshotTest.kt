@@ -22,7 +22,7 @@ import java.util.Locale
 import java.util.TimeZone
 
 /*
- * 기기 크기·자세별 스탠바이 화면 스냅숏. 값은 FixedSources로 고정한다.
+ * 기기 크기·자세별 스탠바이 화면 스냅숏. 값은 FixedSources로 고정한다. 표시 언어는 기본값(한국어), 이름이 _en인 것만 영어.
  *   기준 이미지 만들기:  ./gradlew recordRoborazziDebug
  *   기준과 비교:         ./gradlew verifyRoborazziDebug
  * 이미지는 app/screenshots/에 있다. 화면을 일부러 바꿨으면 기준을 다시 만들고 바뀐 그림을 눈으로 확인한 뒤 커밋한다.
@@ -61,8 +61,11 @@ class StandbyScreenshotTest {
         name: String,
         posture: Posture = Posture.Flat,
         sources: FixedSources = FixedSources(),
+        english: Boolean = false,
         gesture: (() -> Unit)? = null,
     ) {
+        // 기본은 한국어. 영어 화면도 몇 장 함께 지킨다.
+        if (english) SettingsStore(ApplicationProvider.getApplicationContext()).update { putBoolean(SettingsStore.KOREAN, false) }
         composeRule.setContent {
             CompositionLocalProvider(LocalStandbySources provides sources) {
                 StandbyScreen(posture = posture, onOpenSettings = {}, onBrightness = {})
@@ -104,4 +107,8 @@ class StandbyScreenshotTest {
     // 좁은 세로 화면: 달력 스타일의 큰 날짜와 시각이 한 줄에 들어가야 한다.
     @Config(qualifiers = FLIP8_PORT) @Test fun narrow21x9Calendar() = shoot("narrow_21x9_port_calendar") { nextStyle(); composeRule.waitForIdle(); nextStyle() }
     @Config(qualifiers = GALAXY_S_PORT) @Test fun galaxySPortraitCalendar() = shoot("galaxy_s_port_calendar") { nextStyle(); composeRule.waitForIdle(); nextStyle() }
+
+    // 영어 표시
+    @Config(qualifiers = FOLD8_COVER_LAND) @Test fun fold8CoverCalendarEnglish() = shoot("fold8_cover_land_calendar_en", english = true) { nextStyle(); composeRule.waitForIdle(); nextStyle() }
+    @Config(qualifiers = FOLD8_COVER_LAND) @Test fun fold8CoverDigitalEnglish() = shoot("fold8_cover_land_digital_en", english = true) { nextStyle() }
 }

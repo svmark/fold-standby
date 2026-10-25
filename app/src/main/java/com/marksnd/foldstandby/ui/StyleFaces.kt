@@ -18,6 +18,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.text.style.LineHeightStyle
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -29,6 +31,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import com.marksnd.foldstandby.data.AgendaEvent
@@ -128,10 +131,12 @@ private fun BigTime(hm: String, ap: String, digitSize: Dp, available: Dp) {
     // 기준 크기에서 숫자·간격·오전/오후 너비를 재고, 넘치면 같은 비율로 줄인다.
     val scale = with(density) {
         val digitsW = measurer.measure(hm, base.copy(fontSize = digitSize.toSp())).size.width
-        val apW = measurer.measure(ap, base.copy(fontSize = (digitSize * 0.18f).toSp())).size.width
+        // 오전/오후는 Label로 그리므로 자간 없이 잰다(한글 "오전"은 "AM"보다 넓다).
+        val apW = measurer.measure(ap, base.copy(fontSize = (digitSize * 0.18f).toSp(), letterSpacing = TextUnit.Unspecified)).size.width
         val total = digitsW + apW + (digitSize * 0.06f).toPx()
         // 화면이 막 뜰 때 칸 크기가 잠깐 0이면 0/0이 되어 멈춘다. 그때는 줄이지 않는다.
-        val ratio = available.toPx() / total
+        // 줄일 때는 반올림으로 1px 넘쳐 "…"이 붙지 않도록 3% 여유를 둔다.
+        val ratio = available.toPx() * 0.97f / total
         if (total > 0f && ratio.isFinite()) minOf(1f, ratio) else 1f
     }
     if (digitSize <= 0.dp || !digitSize.value.isFinite()) return
@@ -245,6 +250,7 @@ private fun ColumnScope.AgendaColumn(today: LocalDate, agenda: AgendaState, s: A
     }
     // 남은 높이 안에 들어가게 센다. 내일은 제목과 한 줄을 늘 잡아 두고, 남는 높이는 오늘 일정에 먼저 준다.
     // 못 보여준 일정은 숨기지 않고 +N으로 알린다.
+    val line = rememberRoundedLineRatio()
     BoxWithConstraints(Modifier.fillMaxWidth().weight(1f)) {
         val today = timedFirst(agenda.events)
         val tomorrow = timedFirst(agenda.tomorrow)
@@ -254,13 +260,13 @@ private fun ColumnScope.AgendaColumn(today: LocalDate, agenda: AgendaState, s: A
             tomorrowCount = tomorrow.size,
             todayMax = todayMax,
             h = AgendaHeights(
-                todayHead = (s.label * ROUNDED_LINE + s.label * 0.4f).value,
-                empty = (s.title * 0.9f * ROUNDED_LINE).value,
-                event = (s.title * ROUNDED_LINE + s.sub * ROUNDED_LINE).value,
+                todayHead = (s.label * line + s.label * 0.4f).value,
+                empty = (s.title * 0.9f * line).value,
+                event = (s.title * line + s.sub * line).value,
                 eventGap = (s.sub * 0.6f).value,
-                more = (s.sub * ROUNDED_LINE + s.sub * 0.25f).value,
-                tomorrowHead = (s.label * 0.6f + s.label * ROUNDED_LINE).value,
-                line = (s.sub * 1.1f * ROUNDED_LINE + s.sub * 0.25f).value,
+                more = (s.sub * line + s.sub * 0.25f).value,
+                tomorrowHead = (s.label * 0.6f + s.label * line).value,
+                line = (s.sub * 1.1f * line + s.sub * 0.25f).value,
             ),
         )
         Column {
@@ -338,10 +344,28 @@ internal fun fitAgenda(room: Float, todayCount: Int, tomorrowCount: Int, todayMa
 private const val TOMORROW_MAX = 2
 
 /**
- * 둥근 글꼴(Nunito) 한 줄이 실제로 차지하는 높이 ÷ 글자 크기. Label의 줄 높이(1.12)보다 글꼴 자체 높이
- * (ascent 1.011 + descent 0.353)가 커서 글꼴 높이를 따른다. 화면 스냅숏에서 잰 값 1.36에 여유를 조금 둔다.
+ * 둥근 글꼴 Label 한 줄이 실제로 차지하는 높이 ÷ 글자 크기를 이 기기에서 잰다.
+ * Label의 줄 높이(1.12)보다 글꼴 자체 높이가 커서 글꼴 높이를 따른다. 영문(Nunito)은 약 1.37,
+ * 한글은 시스템 대체 글꼴이라 약 1.51이고 기기 글꼴에 따라 다르므로, 한글과 영문을 함께 재어 큰 쪽을 쓴다.
  */
-private const val ROUNDED_LINE = 1.37f
+@Composable
+private fun rememberRoundedLineRatio(): Float {
+    val measurer = rememberTextMeasurer()
+    val density = LocalDensity.current
+    return remember(measurer, density) {
+        val size = 100.dp
+        val sp = with(density) { size.toSp() }
+        val style = TextStyle(
+            fontFamily = Rounded,
+            fontWeight = FontWeight.Black,
+            fontSize = sp,
+            lineHeight = sp * 1.12f,
+            platformStyle = PlatformTextStyle(includeFontPadding = false),
+            lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.Both),
+        )
+        with(density) { measurer.measure("오늘 Ag", style).size.height.toDp() } / size
+    }
+}
 
 /** 시간이 있는 일정을 시작 순으로 먼저, 종일 일정은 뒤로. 종일 일정이 많아도 약속이 밀려나지 않게. */
 private fun timedFirst(events: List<AgendaEvent>) = events.sortedWith(compareBy({ it.allDay }, { it.begin }))

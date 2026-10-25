@@ -71,10 +71,13 @@ fun WeatherPage(state: WeatherState) {
                         Spacer(Modifier.width(u * 0.05f))
                         Column(Modifier.weight(1f), horizontalAlignment = Alignment.End) {
                             Label(skyLabel(sky, korean), u * 0.075f, p.primary, weight = FontWeight.SemiBold, align = TextAlign.End, maxLines = 2)
-                            Label(
-                                if (korean) "최고 ${w.high}° · 최저 ${w.low}°" else "H ${w.high}° · L ${w.low}°",
-                                u * 0.06f, p.secondary, weight = FontWeight.Medium,
-                            )
+                            // 한국어는 "최고 · 최저"가 길어 한 줄에 들어가지 않으므로 두 줄로 나눈다.
+                            if (korean) {
+                                Label("최고 ${w.high}°", u * 0.06f, p.secondary, weight = FontWeight.Medium)
+                                Label("최저 ${w.low}°", u * 0.06f, p.secondary, weight = FontWeight.Medium)
+                            } else {
+                                Label("H ${w.high}° · L ${w.low}°", u * 0.06f, p.secondary, weight = FontWeight.Medium)
+                            }
                             Spacer(Modifier.height(u * 0.03f))
                             Label(if (korean) "체감 ${w.feelsLike}°" else "Feels ${w.feelsLike}°", u * 0.05f, p.dim, weight = FontWeight.Medium)
                             Label(if (korean) "습도 ${w.humidity}%" else "Humidity ${w.humidity}%", u * 0.05f, p.dim, weight = FontWeight.Medium)

@@ -49,7 +49,7 @@ fun NowPlayingPage(state: MediaState, tick: State<Long>) {
         when (state) {
             MediaState.NoAccess -> Message(
                 if (korean) "음악 정보를 보려면 알림 접근을 허용하세요" else "Allow notification access to show music",
-                if (korean) "StandBy 설정 앱에서 켤 수 있어요" else "Turn it on in StandBy settings",
+                if (korean) "Standface 설정에서 켤 수 있어요" else "Turn it on in Standface settings",
                 u,
             )
             MediaState.Idle -> Message(

@@ -15,7 +15,8 @@ enum class NightMode { Auto, On, Off }
 
 data class Settings(
     val accent: Int = 0,
-    val korean: Boolean = false,
+    /** 한국어 사용자를 위한 앱이라 기본은 한국어. 설정에서 English를 고를 수 있다. */
+    val korean: Boolean = true,
     val nightMode: NightMode = NightMode.Auto,
     val mondayFirst: Boolean = true,
     val alarmGlow: Boolean = true,
@@ -34,7 +35,7 @@ class SettingsStore(context: Context) {
 
     fun read() = Settings(
         accent = prefs.getInt(ACCENT, 0),
-        korean = prefs.getBoolean(KOREAN, false),
+        korean = prefs.getBoolean(KOREAN, true),
         nightMode = NightMode.entries.getOrElse(prefs.getInt(NIGHT, 0)) { NightMode.Auto },
         mondayFirst = prefs.getBoolean(MONDAY_FIRST, true),
         alarmGlow = prefs.getBoolean(ALARM_GLOW, true),

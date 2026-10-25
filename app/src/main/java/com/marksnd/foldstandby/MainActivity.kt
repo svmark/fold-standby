@@ -117,9 +117,9 @@ private fun SetupScreen() {
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Column(Modifier.widthIn(max = 640.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text("Fold StandBy", style = MaterialTheme.typography.headlineMedium)
+                Text("Standface", style = MaterialTheme.typography.headlineMedium)
                 Text(
-                    "폴드8을 가로로 세워 충전하면 시계·달력·위젯·음악을 크게 보여줘요. " +
+                    "폰을 세워 두고 충전하면 시계·달력·위젯·음악을 크게 보여줘요. " +
                         "좌우로 밀면 보기가, 시계에서 위아래로 밀면 스타일이 바뀌어요. 이 설정 화면은 스탠바이 화면을 길게 누르면 다시 열 수 있어요. 폰의 화면 회전 잠금과 상관없이 폰 방향대로 돌아가요.",
                     style = MaterialTheme.typography.bodyMedium,
                 )
@@ -134,7 +134,7 @@ private fun SetupScreen() {
                 SectionTitle("충전할 때 자동으로 켜기")
                 StepCard(
                     title = "화면 보호기로 지정",
-                    body = "설정 › 디스플레이 › 화면 보호기에서 Fold StandBy를 고르고, 시작 조건을 '충전 중'으로 바꿔 주세요. " +
+                    body = "설정 › 디스플레이 › 화면 보호기에서 Standface를 고르고, 시작 조건을 '충전 중'으로 바꿔 주세요. " +
                         "메뉴가 안 보이면 설정 검색창에서 '화면 보호기'를 찾으세요.",
                     action = "화면 보호기 설정 열기",
                 ) { openDreamSettings(context) }
@@ -149,7 +149,7 @@ private fun SetupScreen() {
                 PermissionCard("알림 접근", "재생 중 음악과 새 알림 표시", notifOk) { openNotificationAccess(context) }
                 if (!notifOk) {
                     Text(
-                        "목록에서 켜지지 않으면 설정 › 애플리케이션 › Fold StandBy › 오른쪽 위 ⋮ › '제한된 설정 허용'을 먼저 누르세요.",
+                        "목록에서 켜지지 않으면 설정 › 애플리케이션 › Standface › 오른쪽 위 ⋮ › '제한된 설정 허용'을 먼저 누르세요.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
