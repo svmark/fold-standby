@@ -188,7 +188,7 @@ private fun DigitalInfo(
  * 일정이 없거나 캘린더 권한이 없으면 일정 대신 이번 달 달력.
  */
 @Composable
-fun CalendarFace(today: LocalDate, agenda: AgendaState) {
+fun CalendarFace(today: LocalDate, agenda: AgendaState, showTime: Boolean = true) {
     val p = LocalPalette.current
     val korean = LocalKorean.current
     val (hm, ap) = rememberClockText()
@@ -206,7 +206,7 @@ fun CalendarFace(today: LocalDate, agenda: AgendaState) {
                 Label(today.dayOfMonth.toString(), h * 0.35f, p.primary, weight = FontWeight.Black, family = Rounded, letterSpacing = (-0.04).em)
                 Label(monthYear, h * 0.054f, p.secondary, weight = FontWeight.ExtraBold, family = Rounded)
                 Spacer(Modifier.weight(1f))
-                TimeWithAmPm(hm, ap, h * 0.11f)
+                if (showTime) TimeWithAmPm(hm, ap, h * 0.11f)
             }
             Column(Modifier.fillMaxSize().padding(start = w * 0.47f, end = w * 0.05f, top = h * 0.10f, bottom = h * 0.06f)) {
                 AgendaColumn(today, agenda, AgendaSizes(h * 0.04f, h * 0.05f, h * 0.04f, h * 0.05f, h * 0.04f), todayMax = 3)
@@ -217,7 +217,7 @@ fun CalendarFace(today: LocalDate, agenda: AgendaState) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
                     Label(today.dayOfMonth.toString(), h * 0.19f, p.primary, weight = FontWeight.Black, family = Rounded, letterSpacing = (-0.04).em)
                     Spacer(Modifier.weight(1f))
-                    TimeWithAmPm(hm, ap, h * 0.07f, Modifier.padding(bottom = h * 0.016f))
+                    if (showTime) TimeWithAmPm(hm, ap, h * 0.07f, Modifier.padding(bottom = h * 0.016f))
                 }
                 Label(monthYear, h * 0.032f, p.secondary, weight = FontWeight.ExtraBold, family = Rounded)
                 Spacer(Modifier.height(h * 0.04f))

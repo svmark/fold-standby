@@ -60,8 +60,8 @@ fun AnalogCalendarFace(
     showSeconds: Boolean,
     smooth: Boolean,
 ) {
-    // 펼친 안쪽 화면(가장 짧은 변 600dp 이상)에서는 좌우를 반씩 나눈다.
-    // 책처럼 살짝 접어 세우면 접힘선 왼쪽은 달력, 오른쪽은 시계가 된다.
+    // 펼친 안쪽 화면(가장 짧은 변 600dp 이상)과 플립처럼 아주 길쭉한 화면(2:1 이상)에서는 좌우를 반씩 나눈다.
+    // 반쪽이 정사각형에 가까워지고, 책처럼 살짝 접어 세우면 접힘선 왼쪽은 달력, 오른쪽은 시계가 된다.
     val innerDisplay = LocalConfiguration.current.smallestScreenWidthDp >= 600
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val landscape = maxWidth > maxHeight
@@ -69,7 +69,7 @@ fun AnalogCalendarFace(
         Split(
             landscape = landscape,
             firstWeight = when {
-                landscape && innerDisplay -> 0.5f
+                landscape && (innerDisplay || maxWidth / maxHeight >= 2f) -> 0.5f
                 landscape -> 0.4f
                 else -> 0.45f
             },

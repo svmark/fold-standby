@@ -1,6 +1,7 @@
 package com.marksnd.foldstandby
 
 import android.content.Intent
+import android.content.pm.ApplicationInfo
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
@@ -51,7 +52,7 @@ class StandbyActivity : ComponentActivity() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 WindowInfoTracker.getOrCreate(this@StandbyActivity)
                     .windowLayoutInfo(this@StandbyActivity)
-                    .collect { posture = postureOf(it) }
+                    .collect { posture = debugPosture() ?: postureOf(it) }
             }
         }
 
@@ -91,6 +92,17 @@ class StandbyActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         if (intent.getBooleanExtra(EXTRA_FROM_DREAM, false)) setShowWhenLocked(true)
+        setIntent(intent)
+        debugPosture()?.let { posture = it }
+    }
+
+    /**
+     * 개발 빌드에서만: 에뮬레이터가 반접기를 알려주지 않을 때 화면 확인용으로 자세를 강제한다.
+     * adb shell am start -n com.marksnd.foldstandby/.StandbyActivity --es debugPosture tabletop
+     */
+    private fun debugPosture(): Posture? {
+        if (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE == 0) return null
+        return Posture.entries.firstOrNull { it.name.equals(intent.getStringExtra(EXTRA_DEBUG_POSTURE), ignoreCase = true) }
     }
 
     private fun hideSystemBars() {
@@ -106,5 +118,6 @@ class StandbyActivity : ComponentActivity() {
     companion object {
         /** 화면 보호기가 회전 때문에 이 화면으로 넘겼을 때 붙는 표시. */
         const val EXTRA_FROM_DREAM = "fromDream"
+        private const val EXTRA_DEBUG_POSTURE = "debugPosture"
     }
 }

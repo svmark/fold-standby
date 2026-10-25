@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flip StandBy 설계</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --bg: #f6f5f2; --surface: #ffffff; --fg: #1d1c1a; --muted: #6b6760; --line: #e2dfd8;
+  --accent: #a87400; --accent-soft: #fbefd0; --info: #2f6db0; --warn: #b5501f; --code-bg: #f0eee9;
+  --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #141413; --surface: #1d1d1b; --fg: #ecebe7; --muted: #9c988f; --line: #2e2d2a;
+  --accent: #f2c14b; --accent-soft: #3a3020; --info: #7fb2ea; --warn: #ec8b5c; --code-bg: #232320; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #141413; --surface: #1d1d1b; --fg: #ecebe7; --muted: #9c988f; --line: #2e2d2a;
+  --accent: #f2c14b; --accent-soft: #3a3020; --info: #7fb2ea; --warn: #ec8b5c; --code-bg: #232320; color-scheme: dark }
+
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15.5px; line-height: 1.7; }
+.wrap { max-width: 880px; margin: 0 auto; padding: 40px 16px 80px; }
+h1, h2, h3 { line-height: 1.3; margin: 0; }
+h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.02em; }
+h2 { font-size: 1.35rem; font-weight: 700; margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line); }
+h3 { font-size: 1.05rem; font-weight: 700; margin-top: 24px; }
+p, li { max-width: 68ch; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.lede { font-size: 1.08rem; color: var(--muted); margin-top: 12px; }
+code { font-family: var(--font-mono); font-size: .88em; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+a { color: var(--info); }
+
+.verdict { margin-top: 28px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; }
+.verdict dl { display: grid; grid-template-columns: 9em 1fr; gap: 6px 16px; margin: 0; }
+.verdict dt { color: var(--muted); font-size: 13.5px; padding-top: 2px; }
+.verdict dd { margin: 0; min-width: 0; }
+@media (max-width: 560px) { .verdict dl { grid-template-columns: 1fr; } .verdict dt { padding-top: 8px; } }
+
+.tbl { overflow-x: auto; margin-top: 14px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 560px; }
+th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+th { font-size: 12.5px; color: var(--muted); font-weight: 500; }
+.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+figure { margin: 18px 0 0; }
+figure img { display: block; width: 100%; height: auto; border-radius: 12px; background: #000; }
+figcaption { font-size: 13px; color: var(--muted); margin-top: 6px; }
+.row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 18px; }
+.row figure { margin: 0; }
+.tall { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 18px; align-items: start; }
+.tall figure { margin: 0; }
+@media (max-width: 640px) { .row { grid-template-columns: 1fr; } .tall { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.note { margin-top: 18px; border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 10px 14px; border-radius: 0 8px 8px 0; font-size: 14.5px; }
+.todo li { margin-top: 6px; }
+
+/* 한글 줄바꿈 (hangul-wrap) */
+:where(h1,h2,h3,h4,h5,h6,p,li,dd,dt,blockquote,figcaption,td,th){word-break:keep-all;overflow-wrap:break-word}
+:where(h1,h2,h3,h4,h5,h6){text-wrap:balance}
+:where(p,li,dd,blockquote,figcaption){text-wrap:pretty}
+:where(pre,code,kbd,samp){overflow-wrap:anywhere}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="eyebrow">설계 v1 · 2026-10-25</p>
+<h1>갤럭시 Z Flip8용 스탠바이</h1>
+<p class="lede">폴드8 와이드용으로 만든 Fold StandBy를 플립에서도 쓰도록 바꾼 설계예요. 새 앱을 따로 만들지 않고, 같은 앱이 화면 모양과 접힌 자세를 보고 배치를 고르게 했어요.</p>
+
+<div class="verdict">
+<dl>
+  <dt>결론</dt>
+  <dd>플립은 펼쳐서 옆으로 세우면 화면이 약 21:9로 아이폰과 비슷하게 길쭉해요. 그래서 반으로 나누면 정사각형에 가까운 두 칸이 생기고, 아이폰 스탠바이와 가장 닮은 모양이 나와요.</dd>
+  <dt>앱</dt>
+  <dd>Fold StandBy 하나로 폴드8과 플립을 함께 지원해요. 폴드8 화면은 반접기 아랫면만 바뀌었어요.</dd>
+  <dt>확인</dt>
+  <dd>플립과 비슷한 에뮬레이터(1080×2636, 가로 접힘선)와 Flip8 크기(2520×1080)에서 확인했어요. 실제 플립 폰에서는 아직 확인하지 못했어요.</dd>
+</dl>
+</div>
+
+<h2>플립8 화면</h2>
+<div class="tbl">
+<table>
+  <thead><tr><th>화면</th><th>크기</th><th>비율</th><th>스탠바이에서</th></tr></thead>
+  <tbody>
+    <tr><td>메인 화면 (펼침)</td><td class="num">6.9″ · 2520×1080</td><td class="num">약 21:9</td><td>화면 보호기와 앱이 이 화면에 떠요</td></tr>
+    <tr><td>커버 화면 (FlexWindow)</td><td class="num">4.1″ · 948×1048</td><td class="num">거의 1:1</td><td>화면 보호기가 뜨지 않아요. Good Lock MultiStar로 앱을 띄울 수는 있어요</td></tr>
+  </tbody>
+</table>
+</div>
+<p>사양 출처: <a href="https://en.wikipedia.org/wiki/Samsung_Galaxy_Z_Flip_8">Wikipedia</a>, <a href="https://www.androidcentral.com/phones/samsung-galaxy-z-flip-8">Android Central</a>. 커버 화면 앱 지원: <a href="https://9to5google.com/2026/07/22/samsung-galaxy-z-flip-8-cover-screen-app-improvements/">9to5Google</a>.</p>
+
+<h2>세 가지 자세</h2>
+
+<h3>1. 펼쳐서 옆으로 세우기 (충전 거치대)</h3>
+<p>폰을 다 펴서 가로로 눕혀 세운 모양이에요. 아이폰 스탠바이와 가장 가까워요. 화면 비율이 2:1을 넘으면 왼쪽 달력, 오른쪽 시계를 반씩 나눠요. 폴드8 커버 화면(약 1.58:1)은 지금처럼 40:60 그대로예요.</p>
+<div class="row">
+  <figure><img src="flip/flip-land-clock.png" alt="왼쪽 날짜와 이번 달 달력, 오른쪽 정사각 아날로그 시계가 반씩"><figcaption>달력 + 시계, 50:50</figcaption></figure>
+  <figure><img src="flip/flip-land-digital.png" alt="왼쪽 날짜와 날씨, 가운데 큰 디지털 시각"><figcaption>디지털</figcaption></figure>
+  <figure><img src="flip/flip-land-calendar.png" alt="왼쪽 큰 날짜와 시각, 오른쪽 이번 주와 오늘·내일 일정"><figcaption>달력 스타일 (오늘·내일 일정)</figcaption></figure>
+  <figure><img src="flip/flip-land-weather.png" alt="큰 기온과 시간별 예보가 있는 날씨 화면"><figcaption>날씨</figcaption></figure>
+</div>
+
+<h3>2. 반쯤 접어 세우기 (플렉스 모드)</h3>
+<p>플립을 노트북처럼 반쯤 접어 책상에 세운 모양이에요. 접힘선에서 화면을 정확히 반으로 나눠서, 어떤 글자도 접힘선에 걸치지 않게 했어요.</p>
+<ul>
+  <li><b>윗면</b>: 시계만 보여줘요. 위아래로 밀면 정사각 아날로그 시계와 디지털 시계가 바뀌어요. 좌우로 밀면 날씨, 재생 중 음악이에요.</li>
+  <li><b>아랫면</b>: 요일, 큰 날짜, 이번 주, 오늘·내일 일정이에요. 일정이 없으면 이번 달 달력이 나와요. 시각은 윗면에 있으니 아랫면에서는 뺐어요.</li>
+</ul>
+<div class="tall">
+  <figure><img src="flip/flip-flex-clock.png" alt="윗면 아날로그 시계, 아랫면 날짜와 오늘·내일 일정"><figcaption>윗면 아날로그 시계</figcaption></figure>
+  <figure><img src="flip/flip-flex-digital.png" alt="윗면 디지털 시계, 아랫면 날짜와 일정"><figcaption>윗면 디지털</figcaption></figure>
+  <figure><img src="flip/flip-cover.png" alt="정사각에 가까운 화면에서 날짜·달력 위, 시계 아래"><figcaption>커버 화면 크기(948×1048)에서 띄운 경우</figcaption></figure>
+</div>
+<p class="note">폴드8도 안쪽 화면을 세로로 들고 반쯤 접으면 같은 배치가 돼요. 예전에는 윗면에 달력+시계, 아랫면에 일정 한 줄이었는데, 이제 윗면 시계 · 아랫면 날짜와 일정으로 바뀌었어요.</p>
+<figure style="max-width:420px"><img src="flip/fold8-flex.png" alt="폴드8 안쪽 화면 반접기: 윗면 시계, 아랫면 날짜와 일정"><figcaption>폴드8 안쪽 화면 반접기 (1848×2448)</figcaption></figure>
+
+<h3>3. 커버 화면</h3>
+<p>플립의 커버 화면에서는 화면 보호기가 뜨지 않아요. 그래서 이번 범위에서는 따로 설계하지 않았어요. Good Lock MultiStar로 앱을 커버 화면에 띄우면 위 그림처럼 날짜·달력 위, 시계 아래로 나오고, 쓰는 데 문제는 없어요.</p>
+
+<h2>바꾼 코드</h2>
+<div class="tbl">
+<table>
+  <thead><tr><th>파일</th><th>바뀐 점</th></tr></thead>
+  <tbody>
+    <tr><td><code>ui/ClockFaces.kt</code></td><td>화면 비율이 2:1 이상이면 달력+시계를 50:50으로 나눔</td></tr>
+    <tr><td><code>ui/StandbyScreen.kt</code></td><td>반접기일 때 접힘선에서 반으로 나누고, 윗면은 시계 스타일 2개, 아랫면은 날짜·일정 판. 화면 가림(카메라 구멍) 여백은 윗면에만</td></tr>
+    <tr><td><code>ui/StyleFaces.kt</code></td><td>달력 스타일에 시각을 뺄 수 있는 옵션(<code>showTime</code>)</td></tr>
+    <tr><td><code>StandbyActivity.kt</code></td><td>개발 빌드에서만 반접기 자세를 강제하는 시험용 옵션(<code>--es debugPosture tabletop</code>). 정식 빌드에서는 동작하지 않음</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>확인한 것과 남은 것</h2>
+<h3>확인함 (에뮬레이터)</h3>
+<ul>
+  <li>Flip 크기 가로: 달력+시계 50:50, 디지털, 달력 스타일, 날씨, 재생 중</li>
+  <li>반접기: 윗면 아날로그·디지털 전환, 아랫면 날짜·일정</li>
+  <li>폴드8 안쪽 화면 펼침(사진·시계 스택)은 그대로, 반접기는 새 배치</li>
+</ul>
+<p>에뮬레이터가 반접기 상태를 앱에 알려주지 않아서, 반접기 화면은 시험용 옵션으로 자세를 강제해서 봤어요. 실제 플립에서 자세가 제대로 잡히는지는 폰으로 확인해야 해요.</p>
+<h3>남은 것</h3>
+<ul class="todo">
+  <li>실제 플립 폰에서 확인: 반접기 감지, 펀치홀 카메라 위치, 화면 보호기 동작</li>
+  <li>화면 보호기 안에서는 지금도 반접기를 감지하지 않아요(앱으로 열었을 때만). 플립은 반접기로 많이 쓸 테니 화면 보호기에서도 감지하면 좋아요</li>
+  <li>README와 앱 설명에 플립 지원을 적을지, 릴리스를 낼지는 실기기 확인 뒤에 정해요</li>
+</ul>
+
+</div>
+</body>
+</html>

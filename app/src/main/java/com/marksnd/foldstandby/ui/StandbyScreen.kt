@@ -153,6 +153,7 @@ fun StandbyScreen(
         LocalMondayFirst provides settings.mondayFirst,
     ) {
         val agenda by rememberAgenda(openCount)
+        val today by rememberToday()
         BoxWithConstraints(
             Modifier
                 .fillMaxSize()
@@ -197,17 +198,30 @@ fun StandbyScreen(
             val tabletop = posture == Posture.Tabletop
             // 펼친 메인 화면(4:3)은 커버 화면(약 1.58:1)보다 덜 길쭉하다. 남는 아래 공간에 일정을 둔다.
             val strip = landscape && !tabletop && maxWidth / maxHeight < 1.45f
-            Column(
-                Modifier
-                    .fillMaxSize()
-                    .windowInsetsPadding(WindowInsets.displayCutout)
-                    .offset { shift },
-            ) {
-                Box(Modifier.fillMaxWidth().weight(if (strip) 5f else 1f)) {
-                    StandbyPages(store, settings, night, openCount, agenda, nextAlarm)
+            if (tabletop) {
+                // 반쯤 접어 세우면 접힘선에서 정확히 반으로 나눈다(화면 가림 여백은 윗면에만).
+                // 윗면은 시계, 아랫면은 날짜와 오늘·내일 일정.
+                Column(Modifier.fillMaxSize().offset { shift }) {
+                    Box(Modifier.fillMaxWidth().weight(1f).windowInsetsPadding(WindowInsets.displayCutout)) {
+                        StandbyPages(store, settings, night, openCount, agenda, nextAlarm, deskBelow = true)
+                    }
+                    Box(Modifier.fillMaxWidth().weight(1f)) {
+                        CalendarFace(today, agenda, showTime = false)
+                    }
                 }
-                if (tabletop || strip) {
-                    AgendaStrip(agenda, Modifier.fillMaxWidth().weight(1f))
+            } else {
+                Column(
+                    Modifier
+                        .fillMaxSize()
+                        .windowInsetsPadding(WindowInsets.displayCutout)
+                        .offset { shift },
+                ) {
+                    Box(Modifier.fillMaxWidth().weight(if (strip) 5f else 1f)) {
+                        StandbyPages(store, settings, night, openCount, agenda, nextAlarm, deskBelow = false)
+                    }
+                    if (strip) {
+                        AgendaStrip(agenda, Modifier.fillMaxWidth().weight(1f))
+                    }
                 }
             }
             NotificationBanner(maxWidth, Modifier.align(Alignment.TopCenter))
@@ -235,6 +249,7 @@ private fun StandbyPages(
     openCount: Int,
     agenda: AgendaState,
     nextAlarm: Long?,
+    deskBelow: Boolean,
 ) {
     val korean = LocalKorean.current
     // 열 때마다 시계 보기의 달력+시계로 시작한다(마지막에 본 보기를 기억하지 않는다).
@@ -253,7 +268,7 @@ private fun StandbyPages(
 
     HorizontalPager(pager, Modifier.fillMaxSize()) { page ->
         when (page) {
-            0 -> ClockPage(store, openCount, smoothNow, tick, today, night, photos, weather, media, agenda, nextAlarm)
+            0 -> ClockPage(store, openCount, smoothNow, tick, today, night, photos, weather, media, agenda, nextAlarm, deskBelow)
             1 -> WeatherPage(weather)
             else -> NowPlayingPage(media, tick)
         }
@@ -273,14 +288,15 @@ private fun ClockPage(
     media: MediaState,
     agenda: AgendaState,
     nextAlarm: Long?,
+    deskBelow: Boolean,
 ) {
     // 펼친 안쪽 화면을 가로로 두면 왼쪽 달력 + 오른쪽 위젯 스택. 위아래 넘김은 오른쪽 스택이 쓴다.
     val innerDisplay = LocalConfiguration.current.smallestScreenWidthDp >= 600
     BoxWithConstraints(Modifier.fillMaxSize()) {
-        if (innerDisplay && maxWidth > maxHeight) {
+        if (innerDisplay && maxWidth > maxHeight && !deskBelow) {
             UnfoldedFace(store, now, tick, today, night, photos, weather, media)
         } else {
-            ClockStyles(openCount, now, today, night, weather, agenda, nextAlarm)
+            ClockStyles(openCount, now, today, night, weather, agenda, nextAlarm, deskBelow)
         }
     }
 }
@@ -294,18 +310,32 @@ private fun ClockStyles(
     weather: WeatherState,
     agenda: AgendaState,
     nextAlarm: Long?,
+    deskBelow: Boolean,
 ) {
-    val styles = rememberPagerState { CLOCK_STYLES }
+    // 반접기에서는 아랫면이 날짜·일정을 보여주므로 윗면은 시계만(정사각 시계, 디지털).
+    val count = if (deskBelow) 2 else CLOCK_STYLES
+    val styles = rememberPagerState { count }
     LaunchedEffect(openCount) { if (styles.currentPage != 0) styles.scrollToPage(0) }
     Box(Modifier.fillMaxSize()) {
         VerticalPager(styles, Modifier.fillMaxSize()) { style ->
             when (style) {
-                0 -> AnalogCalendarFace(now, today, showSeconds = !night, smooth = !night)
+                0 -> if (deskBelow) {
+                    BoxWithConstraints(Modifier.fillMaxSize()) {
+                        SquircleClock(
+                            now = now,
+                            modifier = Modifier.fillMaxSize().padding(minOf(maxWidth, maxHeight) * 0.06f),
+                            showSeconds = !night,
+                            smooth = !night,
+                        )
+                    }
+                } else {
+                    AnalogCalendarFace(now, today, showSeconds = !night, smooth = !night)
+                }
                 1 -> DigitalFace(today, weather, nextAlarm)
                 else -> CalendarFace(today, agenda)
             }
         }
-        StyleDots(CLOCK_STYLES, styles.currentPage, Modifier.align(Alignment.CenterEnd))
+        StyleDots(count, styles.currentPage, Modifier.align(Alignment.CenterEnd))
     }
 }
 
