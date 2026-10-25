@@ -150,6 +150,16 @@ Kotlin + Jetpack Compose로 만들었어요. 직접 빌드하려면 Android Stud
 ./gradlew installDebug
 ```
 
+테스트:
+
+```bash
+./gradlew testDebugUnitTest        # 배치 규칙 단위 테스트
+./gradlew verifyRoborazziDebug     # 기기 크기·자세별 화면을 app/screenshots/의 기준 그림과 비교
+./gradlew recordRoborazziDebug     # 화면을 일부러 바꿨을 때 기준 그림 다시 만들기
+```
+
+화면 배치를 고르는 규칙은 `ui/LayoutRules.kt`, 기기별 정보(화면 아래 카메라 위치 등)는 `data/DeviceProfile.kt` 한곳에 있어요.
+
 ```
 app/src/main/java/com/marksnd/foldstandby/
 ├─ MainActivity.kt          설정·권한 안내

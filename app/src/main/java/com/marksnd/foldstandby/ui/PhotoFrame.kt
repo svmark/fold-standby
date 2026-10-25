@@ -29,8 +29,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import com.marksnd.foldstandby.data.loadPhoto
-import com.marksnd.foldstandby.data.rememberNow
 import kotlinx.coroutines.delay
 import java.time.Instant
 import java.time.ZoneId
@@ -49,6 +47,7 @@ private const val PHOTO_MAX_SIDE = 1800
 fun PhotoFrame(photos: List<Uri>, modifier: Modifier = Modifier) {
     val p = LocalPalette.current
     val context = LocalContext.current
+    val sources = LocalStandbySources.current
     val order = remember(photos) { photos.shuffled() }
     var index by remember(order) { mutableIntStateOf(0) }
     var current by remember { mutableStateOf<ImageBitmap?>(null) }
@@ -62,11 +61,11 @@ fun PhotoFrame(photos: List<Uri>, modifier: Modifier = Modifier) {
     val uri: Uri? = order.getOrNull(index)
     LaunchedEffect(uri) {
         // 읽지 못한 사진(지워졌거나 권한이 바뀐 경우)은 건너뛴다.
-        val bitmap = uri?.let { loadPhoto(context, it, PHOTO_MAX_SIDE) }
+        val bitmap = uri?.let { sources.loadPhoto(context, it, PHOTO_MAX_SIDE) }
         if (bitmap != null) current = bitmap else if (order.size > 1) index = (index + 1) % order.size
     }
 
-    val now by rememberNow(smooth = false)
+    val now by sources.now(smooth = false)
     val time = Instant.ofEpochMilli(now).atZone(ZoneId.systemDefault()).format(timeFormatter())
 
     // 펼친 화면에서는 오른쪽 위에 전면 카메라가 있다. 사진 윗변을 카메라 아래로 내린다.

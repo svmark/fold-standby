@@ -34,7 +34,6 @@ import androidx.compose.ui.unit.em
 import com.marksnd.foldstandby.data.AgendaEvent
 import com.marksnd.foldstandby.data.AgendaState
 import com.marksnd.foldstandby.data.WeatherState
-import com.marksnd.foldstandby.data.rememberNow
 import com.marksnd.foldstandby.data.skyLabel
 import com.marksnd.foldstandby.data.skyOf
 import java.time.DayOfWeek
@@ -61,7 +60,7 @@ private fun eventTime(ms: Long, korean: Boolean): String {
 
 @Composable
 private fun rememberClockText(): Pair<String, String> {
-    val now = rememberNow(smooth = false)
+    val now = LocalStandbySources.current.now(smooth = false)
     return twelveHour(Instant.ofEpochMilli(now.value).atZone(ZoneId.systemDefault()).toLocalTime(), LocalKorean.current)
 }
 

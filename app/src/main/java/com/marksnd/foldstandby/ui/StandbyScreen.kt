@@ -49,19 +49,9 @@ import com.marksnd.foldstandby.data.MediaState
 import com.marksnd.foldstandby.data.Settings
 import com.marksnd.foldstandby.data.WeatherState
 import com.marksnd.foldstandby.data.SettingsStore
-import com.marksnd.foldstandby.data.rememberAlbumPhotos
-import com.marksnd.foldstandby.data.rememberAgenda
 import com.marksnd.foldstandby.data.glowLevel
-import com.marksnd.foldstandby.data.rememberIsDark
-import com.marksnd.foldstandby.data.rememberLastMotion
-import com.marksnd.foldstandby.data.rememberNextAlarm
-import com.marksnd.foldstandby.data.rememberNow
-import com.marksnd.foldstandby.data.rememberNowPlaying
-import com.marksnd.foldstandby.data.rememberPixelShift
 import com.marksnd.foldstandby.data.rememberSettings
 import com.marksnd.foldstandby.data.rememberSettingsStore
-import com.marksnd.foldstandby.data.rememberToday
-import com.marksnd.foldstandby.data.rememberWeather
 import com.marksnd.foldstandby.service.NotificationBus
 import kotlin.math.roundToInt
 
@@ -94,13 +84,14 @@ fun StandbyScreen(
     onBrightness: (Float?) -> Unit,
     openCount: Int = 0,
 ) {
+    val sources = LocalStandbySources.current
     val store = rememberSettingsStore()
     val settings by rememberSettings(store)
-    val dark by rememberIsDark()
-    val tick by rememberNow(smooth = false)
+    val dark by sources.isDark()
+    val tick by sources.now(smooth = false)
 
     // 알람 전 은은한 빛: 빛이 켜지면 야간(빨강)보다 우선한다.
-    val nextAlarm by rememberNextAlarm()
+    val nextAlarm by sources.nextAlarm()
     val ringing by NotificationBus.ringingAlarm.collectAsState()
     val glow = if (settings.alarmGlow) glowLevel(tick, nextAlarm, ringing != null) else null
 
@@ -111,9 +102,9 @@ fun StandbyScreen(
     }
 
     // 밤에 가만히 두면 거의 끄고, 움직이거나 만지면 다시 켠다.
-    val lastMotion by rememberLastMotion(enabled = settings.wakeOnMotion && night)
-    var lastTouch by remember { mutableLongStateOf(System.currentTimeMillis()) }
-    val nightSince = remember(night) { System.currentTimeMillis() }
+    val lastMotion by sources.lastMotion(enabled = settings.wakeOnMotion && night)
+    var lastTouch by remember { mutableLongStateOf(sources.currentTimeMillis()) }
+    val nightSince = remember(night) { sources.currentTimeMillis() }
     val asleep = settings.wakeOnMotion && night && tick - maxOf(lastMotion, lastTouch, nightSince) > SLEEP_AFTER_MS
     val asleepNow by rememberUpdatedState(asleep)
     val openSettings by rememberUpdatedState(onOpenSettings)
@@ -129,15 +120,15 @@ fun StandbyScreen(
     val sleepShade by animateFloatAsState(if (asleep) 0.93f else 0f, tween(if (asleep) 2000 else 300), label = "sleep")
 
     val palette = if (night) NightPalette else dayPalette(Accents[settings.accent.coerceIn(Accents.indices)])
-    val shift by rememberPixelShift(with(LocalDensity.current) { 3.dp.roundToPx() })
+    val shift by sources.pixelShift(with(LocalDensity.current) { 3.dp.roundToPx() })
 
     CompositionLocalProvider(
         LocalPalette provides palette,
         LocalKorean provides settings.korean,
         LocalMondayFirst provides settings.mondayFirst,
     ) {
-        val agenda by rememberAgenda(openCount)
-        val today by rememberToday()
+        val agenda by sources.agenda(openCount)
+        val today by sources.today()
         BoxWithConstraints(
             Modifier
                 .fillMaxSize()
@@ -146,7 +137,7 @@ fun StandbyScreen(
                     awaitPointerEventScope {
                         while (true) {
                             val event = awaitPointerEvent(PointerEventPass.Initial)
-                            lastTouch = System.currentTimeMillis()
+                            lastTouch = sources.currentTimeMillis()
                             // 자는 화면을 깨우는 터치는 넘김·버튼으로 전달하지 않는다.
                             if (asleepNow) event.changes.forEach { it.consume() }
                         }
@@ -239,13 +230,14 @@ private fun StandbyPages(
     LaunchedEffect(openCount) { if (pager.currentPage != 0) pager.scrollToPage(0) }
 
     // 데이터는 보기를 넘겨도 다시 받지 않도록 여기서 한 번만 구독한다.
-    val smoothNow = rememberNow(smooth = !night)
-    val tick = rememberNow(smooth = false)
-    val today by rememberToday()
-    val weather by rememberWeather(korean)
-    val media by rememberNowPlaying()
+    val sources = LocalStandbySources.current
+    val smoothNow = sources.now(smooth = !night)
+    val tick = sources.now(smooth = false)
+    val today by sources.today()
+    val weather by sources.weather(korean)
+    val media by sources.nowPlaying()
     val inner = innerDisplay()
-    val photos by rememberAlbumPhotos(settings.photoAlbumId.takeIf { showsAlbumPhotos(inner, settings.unfoldedPhotos) })
+    val photos by sources.albumPhotos(settings.photoAlbumId.takeIf { showsAlbumPhotos(inner, settings.unfoldedPhotos) })
 
     HorizontalPager(pager, Modifier.fillMaxSize()) { page ->
         when (page) {
