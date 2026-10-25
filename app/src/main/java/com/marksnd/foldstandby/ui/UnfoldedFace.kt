@@ -12,7 +12,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -20,6 +24,7 @@ import com.marksnd.foldstandby.data.MediaState
 import com.marksnd.foldstandby.data.SettingsStore
 import com.marksnd.foldstandby.data.WeatherState
 import java.time.LocalDate
+import kotlinx.coroutines.flow.first
 
 /** 펼친 화면 오른쪽 스택에 들어가는 카드. */
 enum class StackCard { Photos, Clock, Weather, Music }
@@ -51,7 +56,14 @@ fun UnfoldedFace(
         val i = cards.indexOf(store.read().stackCard)
         if (i >= 0 && i != pager.currentPage) pager.scrollToPage(i)
     }
+    // 사진이 아직 안 읽혀 저장된 카드가 목록에 없을 때 보이는 카드는, 직접 넘기기 전까지 저장하지 않는다.
+    var scrolled by remember { mutableStateOf(false) }
+    LaunchedEffect(pager) {
+        snapshotFlow { pager.isScrollInProgress }.first { it }
+        scrolled = true
+    }
     LaunchedEffect(pager.settledPage, cards) {
+        if (saved !in cards && !scrolled) return@LaunchedEffect
         cards.getOrNull(pager.settledPage)?.let { card -> store.update { putString(SettingsStore.STACK_CARD, card.name) } }
     }
     val playing = (media as? MediaState.Playing)?.now?.playing == true
