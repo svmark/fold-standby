@@ -30,3 +30,20 @@ jobs:
           name: test-results
           path: app/build/test-results/testDebugUnitTest/
           retention-days: 14
+
+  # Dependabot이 Gradle 라이브러리의 보안 문제를 알려주도록 의존성 목록을 GitHub에 올린다(main만).
+  dependencies:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Android SDK 37 설치
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-37.0" "build-tools;37.0.0" > /dev/null
+      - uses: gradle/actions/dependency-submission@v4
